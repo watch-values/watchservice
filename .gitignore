@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# 서버/임시 파일
+*.log
+
+# 나중에 커질 수 있는 것들 (선택)
+node_modules/
+

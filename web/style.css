@@ -1,0 +1,64 @@
+/* 전체 기본 스타일 */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Apple SD Gothic Neo, sans-serif;
+  background: #f5f5f5;
+}
+
+.page {
+  padding: 24px;
+}
+
+.title {
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+/* 카드 그리드 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* 카드 */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+/* 이미지 영역 (지금은 회색 박스) */
+.thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #eaeaea;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 12px;
+}
+
+/* 텍스트 영역 */
+.meta {
+  margin-top: 10px;
+}
+
+.brand {
+  font-size: 12px;
+  color: #666;
+}
+
+.name {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.price {
+  margin-top: 6px;
+  font-size: 13px;
+}
