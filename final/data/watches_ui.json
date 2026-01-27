@@ -2,17 +2,20 @@
   {
     "brand": "Rolex",
     "name": "Datejust",
-    "price": "21,060,000원"
+    "price": "21,060,000원",
+    "image": "/final/image/normalized/m79000-0001.png"
   },
   {
     "brand": "Tudor",
     "name": "Black Bay",
-    "price": "5,000,000원"
+    "price": "5,000,000원",
+    "image": "/final/image/normalized/m126610lv-0002.png"
   },
   {
     "brand": "Omega",
     "name": "Seamaster",
-    "price": "8,900,000원"
+    "price": "8,900,000원",
+    "image": "/final/image/normalized/omega_31020425099001_1400.png"
   }
 ]
 

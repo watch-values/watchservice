@@ -29,7 +29,7 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.06);
 }
 
-/* 이미지 영역 (지금은 회색 박스) */
+/* 이미지 영역 */
 .thumb {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -40,6 +40,13 @@ body {
   justify-content: center;
   color: #888;
   font-size: 12px;
+  overflow: hidden;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* 텍스트 영역 */
