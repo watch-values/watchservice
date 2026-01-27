@@ -1,17 +1,20 @@
 [
   {
+    "ref":"m126610lv-0002",
     "brand": "Rolex",
-    "name": "Datejust",
+    "name": "Submariner Date",
     "price": "21,060,000원",
-    "image": "/final/image/normalized/m79000-0001.png"
-  },
-  {
-    "brand": "Tudor",
-    "name": "Black Bay",
-    "price": "5,000,000원",
     "image": "/final/image/normalized/m126610lv-0002.png"
   },
   {
+    "ref":"m79000-0001",
+    "brand": "Tudor",
+    "name": "Black Bay",
+    "price": "5,000,000원",
+    "image": "/final/image/normalized/m79000-0001.png"
+  },
+  {
+    "ref":"31020425099001",
     "brand": "Omega",
     "name": "Seamaster",
     "price": "8,900,000원",
