@@ -1,9 +1,13 @@
 const grid = document.getElementById("grid");
 const brandFilter = document.getElementById("brandFilter");
+const resultCountEl = document.getElementById("resultCount");
 
 let allWatches = [];
 
 function render(list) {
+  if (resultCountEl) {
+    resultCountEl.textContent = `검색결과 총 ${list.length}개`;
+  }
   grid.innerHTML = list.map(watch => `
     <a href="./detail.html?ref=${encodeURIComponent(watch.ref)}" style="text-decoration:none; color:inherit;">
       <article class="card">
