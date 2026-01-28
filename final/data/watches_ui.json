@@ -1,24 +1,29 @@
 [
   {
-    "ref":"m126610lv-0002",
+    "ref": "m126610lv-0002",
     "brand": "Rolex",
     "name": "Submariner Date",
     "price": "21,060,000원",
+    "price_display": "21,060,000원",
+    "price_value": 21060000,
     "image": "../final/image/normalized/m126610lv-0002.png"
   },
   {
-    "ref":"m79000-0001",
+    "ref": "m79000-0001",
     "brand": "Tudor",
     "name": "Black Bay",
     "price": "5,000,000원",
+    "price_display": "5,000,000원",
+    "price_value": 5000000,
     "image": "../final/image/normalized/m79000-0001.png"
   },
   {
-    "ref":"31020425099001",
+    "ref": "31020425099001",
     "brand": "Omega",
     "name": "Seamaster",
     "price": "8,900,000원",
+    "price_display": "8,900,000원",
+    "price_value": 8900000,
     "image": "../final/image/normalized/omega_31020425099001_1400.png"
   }
 ]
-

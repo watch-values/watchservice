@@ -20,7 +20,7 @@ fetch("../final/data/watches_ui.json")
         <div class="meta">
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name}</div>
-          <div class="price">${watch.price}</div>
+          <div class="price">${watch.price_display ?? watch.price}</div>
           <div style="margin-top:8px; font-size:12px; color:#777;">ref: ${watch.ref}</div>
         </div>
       </article>

@@ -8,11 +8,22 @@
 <body>
     <main class="page">
         <h1 class ="title">Watch Service</h1>
-        <div style="margin-bottom: 16px;">
-            <label style="font-size:12px; color:#666;">브랜드 </label>
-            <select id="brandFilter">
-              <option value="ALL">전체</option>
-            </select>
+        <div class="filter-group">
+            <div class="filter-item">
+                <label>브랜드 </label>
+                <select id="brandFilter">
+                    <option value="ALL">전체</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label>가격 </label>
+                <input type="text" id="minPrice" placeholder="최소" class="price-input">
+                <span>~</span>
+                <input type="text" id="maxPrice" placeholder="최대" class="price-input">
+            </div>
+            <div class="filter-item">
+                <button id="resetFilter" class="btn-reset">초기화</button>
+            </div>
         </div>
           
 

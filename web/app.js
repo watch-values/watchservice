@@ -1,8 +1,24 @@
 const grid = document.getElementById("grid");
 const brandFilter = document.getElementById("brandFilter");
+const minPriceInput = document.getElementById("minPrice");
+const maxPriceInput = document.getElementById("maxPrice");
+const resetBtn = document.getElementById("resetFilter");
 const resultCountEl = document.getElementById("resultCount");
 
 let allWatches = [];
+
+// 숫자 추출 (쉼표 제거 및 정수 변환)
+function parsePrice(val) {
+  if (!val) return null;
+  const num = parseInt(val.toString().replace(/[^0-9]/g, ""), 10);
+  return isNaN(num) ? null : num;
+}
+
+// 쉼표 추가 포맷팅
+function formatNumber(num) {
+  if (num === null || num === undefined) return "";
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 function render(list) {
   if (resultCountEl) {
@@ -17,7 +33,7 @@ function render(list) {
         <div class="meta">
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name}</div>
-          <div class="price">${watch.price}</div>
+          <div class="price">${watch.price_display ?? watch.price}</div>
         </div>
       </article>
     </a>
@@ -25,9 +41,38 @@ function render(list) {
 }
 
 function applyFilter() {
-  const v = brandFilter.value;
-  const filtered = (v === "ALL") ? allWatches : allWatches.filter(w => w.brand === v);
+  const brandValue = brandFilter.value;
+  const minPrice = parsePrice(minPriceInput.value);
+  const maxPrice = parsePrice(maxPriceInput.value);
+
+  const filtered = allWatches.filter(watch => {
+    // 1. 브랜드 필터
+    const matchBrand = (brandValue === "ALL") || (watch.brand === brandValue);
+    
+    // 2. 가격 필터 (price_value가 없으면 fallback 추출)
+    const price = watch.price_value ?? parsePrice(watch.price_display ?? watch.price);
+    
+    let matchPrice = true;
+    if (price !== null) {
+      if (minPrice !== null && price < minPrice) matchPrice = false;
+      if (maxPrice !== null && price > maxPrice) matchPrice = false;
+    } else {
+      // 가격 정보가 아예 없는 경우 필터 입력이 있으면 제외
+      if (minPrice !== null || maxPrice !== null) matchPrice = false;
+    }
+
+    return matchBrand && matchPrice;
+  });
+
   render(filtered);
+}
+
+// 입력 시 콤마 자동 처리
+function handlePriceInput(e) {
+  const rawValue = e.target.value.replace(/[^0-9]/g, "");
+  const formattedValue = formatNumber(rawValue);
+  e.target.value = formattedValue;
+  applyFilter();
 }
 
 fetch("../final/data/watches_ui.json")
@@ -44,7 +89,17 @@ fetch("../final/data/watches_ui.json")
       brandFilter.appendChild(opt);
     });
 
+    // 이벤트 리스너
     brandFilter.addEventListener("change", applyFilter);
+    minPriceInput.addEventListener("input", handlePriceInput);
+    maxPriceInput.addEventListener("input", handlePriceInput);
+    
+    resetBtn.addEventListener("click", () => {
+      brandFilter.value = "ALL";
+      minPriceInput.value = "";
+      maxPriceInput.value = "";
+      applyFilter();
+    });
 
     // 최초 렌더
     applyFilter();
