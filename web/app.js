@@ -4,6 +4,7 @@ const minPriceInput = document.getElementById("minPrice");
 const maxPriceInput = document.getElementById("maxPrice");
 const resetBtn = document.getElementById("resetFilter");
 const resultCountEl = document.getElementById("resultCount");
+const sortFilter = document.getElementById("sortFilter");
 
 let allWatches = [];
 
@@ -44,6 +45,7 @@ function applyFilter() {
   const brandValue = brandFilter.value;
   const minPrice = parsePrice(minPriceInput.value);
   const maxPrice = parsePrice(maxPriceInput.value);
+  const sortValue = sortFilter.value;
 
   const filtered = allWatches.filter(watch => {
     // 1. 브랜드 필터
@@ -63,6 +65,15 @@ function applyFilter() {
 
     return matchBrand && matchPrice;
   });
+
+  // 3. 정렬
+  if (sortValue !== "NONE") {
+    filtered.sort((a, b) => {
+      const pA = a.price_value ?? parsePrice(a.price_display ?? a.price) ?? 0;
+      const pB = b.price_value ?? parsePrice(b.price_display ?? b.price) ?? 0;
+      return sortValue === "LOW_PRICE" ? pA - pB : pB - pA;
+    });
+  }
 
   render(filtered);
 }
@@ -91,11 +102,13 @@ fetch("../final/data/watches_ui.json")
 
     // 이벤트 리스너
     brandFilter.addEventListener("change", applyFilter);
+    sortFilter.addEventListener("change", applyFilter);
     minPriceInput.addEventListener("input", handlePriceInput);
     maxPriceInput.addEventListener("input", handlePriceInput);
     
     resetBtn.addEventListener("click", () => {
       brandFilter.value = "ALL";
+      sortFilter.value = "NONE";
       minPriceInput.value = "";
       maxPriceInput.value = "";
       applyFilter();
