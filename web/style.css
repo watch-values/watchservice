@@ -71,6 +71,60 @@ body {
   color: #666;
 }
 
+/* 필터 요약 및 칩 */
+.filter-summary-container {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #fff;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #444;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+
+.filter-summary-text {
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #222;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f0f4f8;
+  border: 1px solid #d1d9e6;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #334e68;
+}
+
+.chip-remove {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #bccad6;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.chip-remove:hover {
+  background: #829ab1;
+}
+
 /* 카드 그리드 */
 .grid {
   display: grid;

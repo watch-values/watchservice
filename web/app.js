@@ -5,6 +5,9 @@ const maxPriceInput = document.getElementById("maxPrice");
 const resetBtn = document.getElementById("resetFilter");
 const resultCountEl = document.getElementById("resultCount");
 const sortFilter = document.getElementById("sortFilter");
+const filterSummaryContainer = document.getElementById("filterSummaryContainer");
+const filterSummaryText = document.getElementById("filterSummaryText");
+const chipGroup = document.getElementById("chipGroup");
 
 let allWatches = [];
 
@@ -76,7 +79,59 @@ function applyFilter() {
   }
 
   render(filtered);
+  updateFilterSummaryAndChips();
 }
+
+function updateFilterSummaryAndChips() {
+  const brandValue = brandFilter.value;
+  const minPriceRaw = minPriceInput.value;
+  const maxPriceRaw = maxPriceInput.value;
+
+  const summaryParts = [];
+  const chips = [];
+
+  if (brandValue !== "ALL") {
+    summaryParts.push(`브랜드 ${brandValue}`);
+    chips.push({ label: `브랜드: ${brandValue}`, type: 'brand' });
+  }
+
+  if (minPriceRaw && maxPriceRaw) {
+    summaryParts.push(`가격 ${minPriceRaw} ~ ${maxPriceRaw}원`);
+  } else if (minPriceRaw) {
+    summaryParts.push(`가격 ${minPriceRaw}원 이상`);
+  } else if (maxPriceRaw) {
+    summaryParts.push(`가격 ${maxPriceRaw}원 이하`);
+  }
+
+  if (minPriceRaw) {
+    chips.push({ label: `최소가: ${minPriceRaw}`, type: 'min' });
+  }
+
+  if (maxPriceRaw) {
+    chips.push({ label: `최대가: ${maxPriceRaw}`, type: 'max' });
+  }
+
+  if (chips.length > 0) {
+    filterSummaryContainer.style.display = "block";
+    filterSummaryText.textContent = `적용 중: ${summaryParts.join(" · ")}`;
+    chipGroup.innerHTML = chips.map(chip => `
+      <div class="chip">
+        <span>${chip.label}</span>
+        <span class="chip-remove" onclick="window.removeFilter('${chip.type}')">✕</span>
+      </div>
+    `).join("");
+  } else {
+    filterSummaryContainer.style.display = "none";
+  }
+}
+
+// 필터 제거 기능을 window 객체에 할당하여 전역에서 접근 가능하게 함
+window.removeFilter = function(type) {
+  if (type === 'brand') brandFilter.value = "ALL";
+  if (type === 'min') minPriceInput.value = "";
+  if (type === 'max') maxPriceInput.value = "";
+  applyFilter();
+};
 
 // 입력 시 콤마 자동 처리
 function handlePriceInput(e) {

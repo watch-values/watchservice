@@ -1,12 +1,20 @@
 # Watch Service Project
 
-이 프로젝트는  
-시계 데이터와 이미지를 정리하고  
-웹 UI를 하나씩 구현해 나가는 개인 프로젝트입니다.
+이 프로젝트는 다양한 브랜드의 시계를 조회하고 필터링 및 정렬할 수 있는 웹 서비스입니다.
 
----
+## 프로젝트 구조
 
-## STEP 1. 프로젝트 기본 구조 만들기 ✅
+| 분류 | 경로 | 설명 |
+| :--- | :--- | :--- |
+| **Frontend** | `web/index.html` | 메인 페이지 (브랜드/가격 필터, 정렬 기능 포함) |
+| | `web/app.js` | 메인 페이지 비즈니스 로직 및 렌더링 |
+| | `web/detail.html` | 상세 정보 페이지 |
+| | `web/detail.js` | 상세 정보 페이지 로직 |
+| | `web/style.css` | 프로젝트 전체 스타일시트 |
+| **Data** | `final/data/watches_ui.json` | 시계 데이터베이스 (JSON 포맷) |
+| **Assets** | `final/image/normalized/` | 규격화된 상품 이미지 폴더 |
+| **Config** | `.gitignore` | Git 관리 제외 설정 파일 |
+| | `README.md` | 프로젝트 가이드 및 구조 문서 |
 
 ### 목표
 - 맥북 Desktop에 프로젝트 생성
