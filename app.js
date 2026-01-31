@@ -141,7 +141,7 @@ function handlePriceInput(e) {
   applyFilter();
 }
 
-fetch("../final/data/watches_ui.json")
+fetch("./final/data/watches_ui.json")
   .then(r => r.json())
   .then(watches => {
     allWatches = watches;

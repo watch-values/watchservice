@@ -6,11 +6,11 @@
 
 | 분류 | 경로 | 설명 |
 | :--- | :--- | :--- |
-| **Frontend** | `web/index.html` | 메인 페이지 (브랜드/가격 필터, 정렬 기능 포함) |
-| | `web/app.js` | 메인 페이지 비즈니스 로직 및 렌더링 |
-| | `web/detail.html` | 상세 정보 페이지 |
-| | `web/detail.js` | 상세 정보 페이지 로직 |
-| | `web/style.css` | 프로젝트 전체 스타일시트 |
+| **Frontend** | `index.html` | 메인 페이지 (브랜드/가격 필터, 정렬 기능 포함) |
+| | `app.js` | 메인 페이지 비즈니스 로직 및 렌더링 |
+| | `detail.html` | 상세 정보 페이지 |
+| | `detail.js` | 상세 정보 페이지 로직 |
+| | `style.css` | 프로젝트 전체 스타일시트 |
 | **Data** | `final/data/watches_ui.json` | 시계 데이터베이스 (JSON 포맷) |
 | **Assets** | `final/image/normalized/` | 규격화된 상품 이미지 폴더 |
 | **Config** | `.gitignore` | Git 관리 제외 설정 파일 |
@@ -40,10 +40,10 @@
 - **기본 원칙(가장 중요)**: `watches_ui.json` 안의 `image` 경로는 **절대경로(`/...`) 금지**, **상대경로 사용**을 기본으로 합니다.
   - **이유**: GitHub Pages처럼 `https://도메인/레포이름/` 처럼 **하위 경로**로 배포되면 `/final/...`은 도메인 루트(`/`) 기준으로 찾기 때문에 **이미지가 깨질 수 있습니다.**
 - **상대경로 기준점(무엇을 기준으로 상대인가?)**
-  - **규칙**: `web/` 폴더의 HTML(`index.html`, `detail.html`)에서 그대로 사용할 수 있는 경로로 작성합니다.
-  - 즉, `web/`에서 봤을 때 `final/`로 “올라가는” 상대경로를 씁니다.
+  - **규칙**: 루트 폴더의 HTML(`index.html`, `detail.html`)에서 그대로 사용할 수 있는 경로로 작성합니다.
+  - 즉, 루트에서 봤을 때 `final/`로 이어지는 상대경로를 씁니다.
 - **권장 경로 형태**
-  - **권장**: `../final/image/normalized/<파일명>.png`
+  - **권장**: `./final/image/normalized/<파일명>.png`
   - **금지**: `/final/image/normalized/<파일명>.png`
 - **배포 환경 원칙 (로컬/서브패스/GitHub Pages)**
   - **규칙**: “사이트가 어떤 경로에 올라가도 동작”을 목표로 하면, **JSON 이미지 경로 + fetch 경로 + 페이지 링크를 모두 상대경로로 통일**합니다.
@@ -95,9 +95,9 @@
     - `final/data/watches_ui.json`: UI 데이터의 단일 소스(Single Source of Truth)
     - `final/image/normalized/`: UI에서 사용하는 이미지 표준 위치
 
-- **`web/` (정적 프론트엔드/UI)**
+- **Root (정적 프론트엔드/UI)**
   - **책임**: 화면 렌더링(목록/상세), 필터/정렬 같은 UI 로직만 담당합니다.
-  - **원칙**: `web/`은 데이터를 “생성”하지 않고, **`final/`을 읽어서(consuming) 보여주기만** 합니다.
+  - **원칙**: 루트에 위치한 파일들은 데이터를 “생성”하지 않고, **`final/`을 읽어서(consuming) 보여주기만** 합니다.
   - **소비 규칙**
     - **데이터 소스**: `final/data/watches_ui.json` 하나를 목록/상세에서 공통으로 사용합니다.
     - **상세 이동**: `detail.html?ref=...` 형태로 이동하고, detail은 `ref`로 JSON에서 찾습니다.
