@@ -2,7 +2,7 @@ const detailEl = document.getElementById("detail");
 const params = new URLSearchParams(location.search);
 const ref = params.get("ref");
 
-fetch("./final/data/watches_ui.json")
+fetch("final/data/watches_ui.json")
   .then(r => r.json())
   .then(list => {
     const watch = list.find(w => w.ref === ref);

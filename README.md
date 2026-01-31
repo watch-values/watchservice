@@ -43,7 +43,7 @@
   - **규칙**: 루트 폴더의 HTML(`index.html`, `detail.html`)에서 그대로 사용할 수 있는 경로로 작성합니다.
   - 즉, 루트에서 봤을 때 `final/`로 이어지는 상대경로를 씁니다.
 - **권장 경로 형태**
-  - **권장**: `./final/image/normalized/<파일명>.png`
+  - **권장**: `final/image/normalized/<파일명>.png`
   - **금지**: `/final/image/normalized/<파일명>.png`
 - **배포 환경 원칙 (로컬/서브패스/GitHub Pages)**
   - **규칙**: “사이트가 어떤 경로에 올라가도 동작”을 목표로 하면, **JSON 이미지 경로 + fetch 경로 + 페이지 링크를 모두 상대경로로 통일**합니다.
