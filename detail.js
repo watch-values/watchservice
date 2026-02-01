@@ -20,8 +20,12 @@ fetch("final/data/watches_ui.json")
         <div class="meta">
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name}</div>
-          <div class="price">${watch.price_display ?? watch.price}</div>
-          <div style="margin-top:8px; font-size:12px; color:#777;">ref: ${watch.ref}</div>
+          <div class="price-list" style="margin-top:12px; font-size:13px; line-height:1.6;">
+            <div><span style="color:#888;">공식판매가:</span> ${watch.prices.retail.display}</div>
+            <div style="font-weight:bold; color:#e44d26;"><span style="color:#888; font-weight:normal;">국내시세:</span> ${watch.prices.korea_market.display}</div>
+            <div><span style="color:#888;">해외시세:</span> ${watch.prices.global_market.display}</div>
+          </div>
+          <div style="margin-top:12px; font-size:12px; color:#777;">ref: ${watch.ref}</div>
         </div>
       </article>
     `;

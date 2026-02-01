@@ -28,20 +28,25 @@ function render(list) {
   if (resultCountEl) {
     resultCountEl.textContent = `검색결과 총 ${list.length}개`;
   }
-  grid.innerHTML = list.map(watch => `
+  grid.innerHTML = list.map(watch => {
+    const displayRef = watch.ref.startsWith('m') ? watch.ref.slice(1) : watch.ref;
+    return `
     <a href="./detail.html?ref=${encodeURIComponent(watch.ref)}" style="text-decoration:none; color:inherit;">
       <article class="card">
         <div class="thumb">
           <img src="${watch.image}" alt="${watch.brand} ${watch.name}">
         </div>
         <div class="meta">
-          <div class="brand">${watch.brand}</div>
+          <div class="brand-row">
+            <div class="brand">${watch.brand}</div>
+            <div class="ref-no">Ref. ${displayRef}</div>
+          </div>
           <div class="name">${watch.name}</div>
-          <div class="price">${watch.price_display ?? watch.price}</div>
+          <div class="price">${watch.prices.korea_market.display}</div>
         </div>
       </article>
     </a>
-  `).join("");
+  `;}).join("");
 }
 
 function applyFilter() {
@@ -54,8 +59,8 @@ function applyFilter() {
     // 1. 브랜드 필터
     const matchBrand = (brandValue === "ALL") || (watch.brand === brandValue);
     
-    // 2. 가격 필터 (price_value가 없으면 fallback 추출)
-    const price = watch.price_value ?? parsePrice(watch.price_display ?? watch.price);
+    // 2. 가격 필터 (국내 시세 기준)
+    const price = watch.prices.korea_market.value;
     
     let matchPrice = true;
     if (price !== null) {
@@ -69,11 +74,11 @@ function applyFilter() {
     return matchBrand && matchPrice;
   });
 
-  // 3. 정렬
+  // 3. 정렬 (국내 시세 기준)
   if (sortValue !== "NONE") {
     filtered.sort((a, b) => {
-      const pA = a.price_value ?? parsePrice(a.price_display ?? a.price) ?? 0;
-      const pB = b.price_value ?? parsePrice(b.price_display ?? b.price) ?? 0;
+      const pA = a.prices.korea_market.value;
+      const pB = b.prices.korea_market.value;
       return sortValue === "LOW_PRICE" ? pA - pB : pB - pA;
     });
   }
