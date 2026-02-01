@@ -28,25 +28,20 @@ function render(list) {
   if (resultCountEl) {
     resultCountEl.textContent = `검색결과 총 ${list.length}개`;
   }
-  grid.innerHTML = list.map(watch => {
-    const displayRef = watch.ref.startsWith('m') ? watch.ref.slice(1) : watch.ref;
-    return `
+  grid.innerHTML = list.map(watch => `
     <a href="./detail.html?ref=${encodeURIComponent(watch.ref)}" style="text-decoration:none; color:inherit;">
       <article class="card">
         <div class="thumb">
           <img src="${watch.image}" alt="${watch.brand} ${watch.name}">
         </div>
         <div class="meta">
-          <div class="brand-row">
-            <div class="brand">${watch.brand}</div>
-            <div class="ref-no">Ref. ${displayRef}</div>
-          </div>
+          <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name}</div>
           <div class="price">${watch.prices.korea_market.display}</div>
         </div>
       </article>
     </a>
-  `;}).join("");
+  `).join("");
 }
 
 function applyFilter() {

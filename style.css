@@ -170,17 +170,6 @@ body {
   color: #666;
 }
 
-.brand-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.ref-no {
-  font-size: 11px;
-  color: #999;
-}
-
 .name {
   margin-top: 4px;
   font-size: 14px;
