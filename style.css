@@ -64,6 +64,21 @@ body {
   background: #e5e5e5;
 }
 
+.btn-back {
+  display: inline-block;
+  margin-bottom: 24px;
+  text-decoration: none;
+  color: #666;
+  font-size: 14px;
+  font-family: serif;
+  font-style: italic;
+  transition: color 0.2s;
+}
+
+.btn-back:hover {
+  color: #222;
+}
+
 /* 결과 개수 */
 .result-count {
   margin-bottom: 12px;
@@ -179,4 +194,191 @@ body {
 .price {
   margin-top: 6px;
   font-size: 13px;
+}
+
+/* 상세 페이지 개편 스타일 */
+.detail-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  background: #fff;
+  padding: 40px;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.detail-visual {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.detail-visual img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.detail-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.detail-header {
+  margin-bottom: 32px;
+  border-bottom: 2px solid #333;
+  padding-bottom: 16px;
+}
+
+.detail-header .brand {
+  font-family: serif;
+  font-size: 18px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.detail-header .name {
+  font-size: 32px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.spec-label {
+  font-family: serif;
+  font-style: italic;
+  color: #666;
+  font-size: 14px;
+}
+
+.spec-value {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+  text-align: right;
+}
+
+.price-section {
+  margin-top: 32px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.price-item:last-child {
+  margin-bottom: 0;
+  padding-top: 8px;
+  border-top: 1px solid #ddd;
+}
+
+.detail-description {
+  width: 100%;
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid #eee;
+}
+
+.detail-description h3 {
+  font-family: serif;
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.detail-description p {
+  line-height: 1.8;
+  color: #555;
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.description-content h2 {
+  font-family: serif;
+  font-size: 1.4em;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  color: #222;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.description-content h3 {
+  font-family: serif;
+  font-size: 1.2em;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.description-content ul {
+  margin-bottom: 24px;
+  padding-left: 20px;
+}
+
+.description-content li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.description-content hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 32px 0;
+}
+
+.description-content strong {
+  color: #222;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .detail-container {
+    padding: 20px;
+    gap: 24px;
+  }
+  
+  .detail-header .name {
+    font-size: 24px;
+  }
+}
+
+/* 사이트 푸터 */
+.site-footer {
+  margin-top: 80px;
+  padding: 40px 24px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  color: #888;
+}
+
+.site-footer p {
+  margin: 4px 0;
+  font-size: 12px;
+  line-height: 1.6;
 }

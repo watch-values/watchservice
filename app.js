@@ -36,8 +36,9 @@ function render(list) {
         </div>
         <div class="meta">
           <div class="brand">${watch.brand}</div>
-          <div class="name">${watch.name}</div>
-          <div class="price">${watch.prices.korea_market.display}</div>
+          <div class="name">${watch.name} <span style="font-size: 11px; font-weight: normal; color: #888; margin-left: 4px;">(${watch.size}, ${watch.material})</span></div>
+          <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices.retail.display}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.prices.korea_market.display}</div>
         </div>
       </article>
     </a>
@@ -54,8 +55,8 @@ function applyFilter() {
     // 1. 브랜드 필터
     const matchBrand = (brandValue === "ALL") || (watch.brand === brandValue);
     
-    // 2. 가격 필터 (국내 시세 기준)
-    const price = watch.prices.korea_market.value;
+    // 2. 가격 필터 (공식판매가 기준)
+    const price = watch.prices.retail.value;
     
     let matchPrice = true;
     if (price !== null) {
@@ -69,11 +70,11 @@ function applyFilter() {
     return matchBrand && matchPrice;
   });
 
-  // 3. 정렬 (국내 시세 기준)
+  // 3. 정렬 (공식판매가 기준)
   if (sortValue !== "NONE") {
     filtered.sort((a, b) => {
-      const pA = a.prices.korea_market.value;
-      const pB = b.prices.korea_market.value;
+      const pA = a.prices.retail.value;
+      const pB = b.prices.retail.value;
       return sortValue === "LOW_PRICE" ? pA - pB : pB - pA;
     });
   }
@@ -96,11 +97,11 @@ function updateFilterSummaryAndChips() {
   }
 
   if (minPriceRaw && maxPriceRaw) {
-    summaryParts.push(`가격 ${minPriceRaw} ~ ${maxPriceRaw}원`);
+    summaryParts.push(`가격 ₩${minPriceRaw} ~ ₩${maxPriceRaw}`);
   } else if (minPriceRaw) {
-    summaryParts.push(`가격 ${minPriceRaw}원 이상`);
+    summaryParts.push(`가격 ₩${minPriceRaw} 이상`);
   } else if (maxPriceRaw) {
-    summaryParts.push(`가격 ${maxPriceRaw}원 이하`);
+    summaryParts.push(`가격 ₩${maxPriceRaw} 이하`);
   }
 
   if (minPriceRaw) {

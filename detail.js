@@ -2,31 +2,109 @@ const detailEl = document.getElementById("detail");
 const params = new URLSearchParams(location.search);
 const ref = params.get("ref");
 
+// 스펙 행 생성 함수 (값이 있을 때만 렌더링)
+function createSpecRow(label, value) {
+  if (!value) return "";
+  return `
+    <div class="spec-row">
+      <span class="spec-label">${label}</span>
+      <span class="spec-value">${value}</span>
+    </div>
+  `;
+}
+
+// 외부 설명 파일 가져오기 함수
+async function fetchDescription(ref) {
+  try {
+    const response = await fetch(`final/data/descriptions/${ref}.md`);
+    if (response.ok) {
+      const text = await response.text();
+      // marked 라이브러리를 사용하여 마크다운을 HTML로 변환
+      return marked.parse(text);
+    }
+  } catch (error) {
+    console.log("External description not found or failed to load:", error);
+  }
+  return null;
+}
+
 fetch("final/data/watches_ui.json")
   .then(r => r.json())
-  .then(list => {
+  .then(async list => {
     const watch = list.find(w => w.ref === ref);
 
     if (!watch) {
-      detailEl.innerHTML = `<p>해당 상품을 찾을 수 없어요. (ref: ${ref ?? "없음"})</p>`;
+      detailEl.innerHTML = `
+        <div class="detail-container" style="justify-content: center; padding: 100px 0;">
+          <p style="color: #888;">해당 상품을 찾을 수 없습니다. (Ref: ${ref ?? "N/A"})</p>
+        </div>
+      `;
       return;
     }
 
+    // 외부 설명 파일이 있는지 확인하고 가져옴
+    const externalDesc = await fetchDescription(watch.ref);
+
+    // 기본 이미지 처리
+    const imageUrl = watch.image || "final/image/no-image.png";
+
     detailEl.innerHTML = `
-      <article class="card" style="max-width:520px;">
-        <div class="thumb">
-          <img src="${watch.image}" alt="${watch.brand} ${watch.name}">
+      <div class="detail-container">
+        <div class="detail-visual">
+          <img src="${imageUrl}" alt="${watch.brand} ${watch.name}" onerror="this.src='https://via.placeholder.com/600x600?text=No+Image'">
         </div>
-        <div class="meta">
-          <div class="brand">${watch.brand}</div>
-          <div class="name">${watch.name}</div>
-          <div class="price-list" style="margin-top:12px; font-size:13px; line-height:1.6;">
-            <div><span style="color:#888;">공식판매가:</span> ${watch.prices.retail.display}</div>
-            <div style="font-weight:bold; color:#e44d26;"><span style="color:#888; font-weight:normal;">국내시세:</span> ${watch.prices.korea_market.display}</div>
-            <div><span style="color:#888;">해외시세:</span> ${watch.prices.global_market.display}</div>
+        
+        <div class="detail-info">
+          <header class="detail-header">
+            <div class="brand">${watch.brand}</div>
+            <h2 class="name">${watch.name}</h2>
+          </header>
+
+          <div class="spec-table">
+            ${createSpecRow("Reference", watch.ref)}
+            ${createSpecRow("Size", watch.size)}
+            ${createSpecRow("Material", watch.material)}
+            ${createSpecRow("Dial Color", watch.dial_color)}
+            ${createSpecRow("Thickness", watch.thickness)}
+            ${createSpecRow("Water Resistance", watch.water_resistance)}
+            ${createSpecRow("Movement", watch.movement)}
+            ${createSpecRow("Power Reserve", watch.power_reserve)}
           </div>
-          <div style="margin-top:12px; font-size:12px; color:#777;">ref: ${watch.ref}</div>
+
+          <div class="price-section">
+            <div class="price-item">
+              <span class="spec-label">Retail Price</span>
+              <span class="spec-value">${watch.prices?.retail?.display || "Contact for Price"}</span>
+            </div>
+            <div class="price-item">
+              <span class="spec-label">Global Market</span>
+              <span class="spec-value">${watch.prices?.global_market?.display || "N/A"}</span>
+            </div>
+            <div class="price-item">
+              <span class="spec-label" style="font-style: normal; font-weight: bold; color: #222;">Korea Market</span>
+              <span class="spec-value" style="font-weight: bold; color: #e44d26;">${watch.prices?.korea_market?.display || "N/A"}</span>
+            </div>
+          </div>
         </div>
-      </article>
+
+        <div class="detail-description">
+          <h3>Description</h3>
+          <div class="description-content">
+            ${externalDesc || watch.description || `
+              <p>
+                이 모델은 ${watch.brand}의 장인 정신과 혁신적인 기술력이 집약된 타임피스입니다. 
+                ${watch.size || ""}의 ${watch.material || ""} 케이스와 정교하게 마감된 ${watch.dial_color || ""} 다이얼은 
+                시간이 흘러도 변치 않는 클래식한 아름다움을 선사합니다. 
+                전문가들의 엄격한 검수를 거친 정밀한 무브먼트는 최상의 성능을 보장하며, 
+                수집가들 사이에서 높은 가치를 인정받는 모델입니다.
+              </p>
+            `}
+          </div>
+        </div>
+      </div>
     `;
+  })
+  .catch(err => {
+    console.error("Data load failed:", err);
+    detailEl.innerHTML = `<p style="text-align:center; padding: 50px;">데이터를 불러오는 중 오류가 발생했습니다.</p>`;
   });
