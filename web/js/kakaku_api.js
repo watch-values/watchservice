@@ -4,16 +4,13 @@
 
 (function () {
   // API URL 설정
-  // 1) (권장) index.html/detail.html에서 window.KAKAKU_LATEST_PRICES_URL 값을 지정
-  // 2) 또는 아래 DEFAULT_KAKAKU_LATEST_PRICES_URL 상수를 직접 수정
   const DEFAULT_KAKAKU_LATEST_PRICES_URL =
     "https://YOUR_API_DOMAIN/api/kakaku/latest-prices/";
   const KAKAKU_LATEST_PRICES_URL =
     window.KAKAKU_LATEST_PRICES_URL || DEFAULT_KAKAKU_LATEST_PRICES_URL;
 
-  // 캐시 키 버전을 올려서( v3 ) 이전 캐시가 남아 있어도 자동 갱신되게 함
-  // (예: 예전엔 count=1만 캐시되어 Explorer가 JSON 가격으로 보이는 문제를 방지)
-  const CACHE_KEY = "kakaku_latest_prices_cache_v3";
+  // 캐시 키 버전을 올려서( v6 ) 이전 캐시가 남아 있어도 자동 갱신되게 함
+  const CACHE_KEY = "kakaku_latest_prices_cache_v6";
   const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
   function nowMs() {
@@ -54,14 +51,6 @@
     }
   }
 
-  function clearCache() {
-    try {
-      localStorage.removeItem(CACHE_KEY);
-    } catch (_) {
-      // ignore
-    }
-  }
-
   function parseKrwToNumber(value) {
     if (!value) return null;
     const n = parseInt(String(value).replace(/[^0-9]/g, ""), 10);
@@ -88,21 +77,11 @@
     }
   }
 
-  /**
-   * loadLatestPrices()
-   * - 캐시가 유효하면 캐시 반환
-   * - 아니면 API 호출 후 캐시 저장
-   * - 실패 시 null 반환
-   */
   async function loadLatestPrices() {
     if (
       !KAKAKU_LATEST_PRICES_URL ||
       String(KAKAKU_LATEST_PRICES_URL).includes("YOUR_API_DOMAIN")
     ) {
-      console.warn(
-        "[KakakuAPI] API URL이 설정되지 않았습니다. " +
-          "window.KAKAKU_LATEST_PRICES_URL 또는 DEFAULT_KAKAKU_LATEST_PRICES_URL을 설정하세요."
-      );
       return null;
     }
 
@@ -119,19 +98,13 @@
     return data;
   }
 
-  /**
-   * buildPriceMap(results)
-   * - API 응답의 results 배열을 ref_id -> { price, recorded_at } 형태로 변환
-   */
   function buildPriceMap(apiResponse) {
-    const results = apiResponse && Array.isArray(apiResponse.results)
-      ? apiResponse.results
-      : [];
-
+    const results = apiResponse?.results || (Array.isArray(apiResponse) ? apiResponse : []);
     const map = Object.create(null);
     for (const row of results) {
       if (!row || !row.ref_id) continue;
-      map[row.ref_id] = {
+      const cleanId = String(row.ref_id).trim().toLowerCase();
+      map[cleanId] = {
         price: row.price || null,
         recorded_at: row.recorded_at || null,
       };
@@ -139,52 +112,58 @@
     return map;
   }
 
-  /**
-   * applyPricesToWatches(watches, priceMap)
-   * - watches_ui.json의 watch.ref == priceMap[ref].ref_id 인 경우에만 동적 필드를 추가
-   * - 기존 watch.prices(정적 가격)는 절대 수정하지 않음
-   */
   function applyPricesToWatches(watches, priceMap) {
     if (!Array.isArray(watches) || !priceMap) return watches;
 
     let appliedCount = 0;
+    const mapKeys = Object.keys(priceMap);
+
+    // 진단용 로그: 데이터 구조 출력
+    if (watches.length > 0) {
+      console.log("[KakakuAPI] 시계 데이터 샘플 구조:", Object.keys(watches[0]));
+    }
+
     for (const w of watches) {
-      if (!w || !w.ref) continue;
-      const hit = priceMap[w.ref];
-      if (!hit || !hit.price) continue;
+      const currentRef = w.ref || w.ref_id || w.id;
+      if (!currentRef) {
+        console.warn("[KakakuAPI] 시계 데이터에 매칭할 ID가 없음:", w);
+        continue;
+      }
 
-      const p = hit.price;
+      const cleanRef = String(currentRef).trim().toLowerCase();
+      const hit = priceMap[cleanRef];
 
-      // 원문 문자열 (API가 문자열로 내려줌)
-      w.kakaku_jpy = p.jpy ?? null;
-      w.kakaku_krw_domestic_raw = p.krw_domestic ?? null;
-      w.kakaku_krw_asia_raw = p.krw_asia ?? null;
-      w.kakaku_yen_rate = p.yen_rate ?? null;
-      w.kakaku_recorded_at = hit.recorded_at ?? null;
+      if (hit && hit.price) {
+        const p = hit.price;
+        w.kakaku_jpy = p.jpy ?? null;
+        w.kakaku_krw_domestic_raw = p.krw_domestic ?? null;
+        w.kakaku_krw_asia_raw = p.krw_asia ?? null;
+        w.kakaku_yen_rate = p.yen_rate ?? null;
+        w.kakaku_recorded_at = hit.recorded_at ?? null;
 
-      // 숫자/표시용 (UI에서 사용)
-      const domesticNum = parseKrwToNumber(p.krw_domestic);
-      const asiaNum = parseKrwToNumber(p.krw_asia);
+        const domesticNum = parseKrwToNumber(p.krw_domestic);
+        const asiaNum = parseKrwToNumber(p.krw_asia);
 
-      w.kakaku_krw_domestic = domesticNum;
-      w.kakaku_krw_asia = asiaNum;
-      w.kakaku_krw_domestic_display = formatKrwDisplay(domesticNum);
-      w.kakaku_krw_asia_display = formatKrwDisplay(asiaNum);
+        w.kakaku_krw_domestic = domesticNum;
+        w.kakaku_krw_asia = asiaNum;
+        w.kakaku_krw_domestic_display = formatKrwDisplay(domesticNum);
+        w.kakaku_krw_asia_display = formatKrwDisplay(asiaNum);
 
-      appliedCount += 1;
+        appliedCount += 1;
+      } else {
+        console.warn(`[KakakuAPI] No API match for ref: "${cleanRef}". Available API keys:`, mapKeys);
+      }
     }
 
     console.log(`[KakakuAPI] applied prices: ${appliedCount}/${watches.length}`);
     return watches;
   }
 
-  // expose
   window.KakakuAPI = {
     KAKAKU_LATEST_PRICES_URL,
     loadLatestPrices,
     buildPriceMap,
     applyPricesToWatches,
-    clearCache,
+    clearCache: () => localStorage.removeItem(CACHE_KEY),
   };
 })();
-

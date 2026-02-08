@@ -39,8 +39,8 @@ function render(list) {
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name} <span style="font-size: 11px; font-weight: normal; color: #888; margin-left: 4px;">(${watch.size}, ${watch.material})</span></div>
           <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices?.retail?.display || "N/A"}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.kakaku_krw_domestic_display || watch.prices?.korea_market?.display || "N/A"}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.kakaku_krw_asia_display || watch.prices?.global_market?.display || "N/A"}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.ext_krw_domestic_display || watch.prices?.korea_market?.display || "N/A"}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.ext_krw_asia_display || watch.prices?.global_market?.display || "N/A"}</div>
         </div>
       </article>
     </a>
@@ -52,13 +52,18 @@ function getPriceValueByBasis(watch, basis) {
 
   const retail = watch.prices?.retail?.value ?? null;
   const market = watch.prices?.korea_market?.value ?? null;
-  const kakaku = watch.kakaku_krw_domestic ?? null;
+  const dynamic = watch.ext_krw_domestic ?? null;
 
   switch (basis) {
     case "RETAIL":
       return retail;
+    case "MARKET":
+      return market;
+    case "KAKAKU":
+      return dynamic;
+    case "AUTO":
     default:
-      return retail;
+      return dynamic ?? market ?? retail;
   }
 }
 
@@ -175,11 +180,11 @@ function handlePriceInput(e) {
 fetch("final/data/watches_ui.json")
   .then(r => r.json())
   .then(async watches => {
-    // Kakaku API 최신 가격을 ref 기준으로 합치기 (동적 필드: kakaku_*)
+    // API 최신 가격을 ref 기준으로 합치기
     try {
-      const apiData = await (window.KakakuAPI?.loadLatestPrices?.() ?? Promise.resolve(null));
-      const priceMap = window.KakakuAPI?.buildPriceMap?.(apiData) ?? Object.create(null);
-      window.KakakuAPI?.applyPricesToWatches?.(watches, priceMap);
+      const apiData = await (window.PriceAPI?.loadLatestPrices?.() ?? Promise.resolve(null));
+      const priceMap = window.PriceAPI?.buildPriceMap?.(apiData) ?? Object.create(null);
+      window.PriceAPI?.applyPricesToWatches?.(watches, priceMap);
     } catch (_) {
       // 실패 시 그냥 정적 데이터로 렌더링
     }
