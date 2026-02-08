@@ -5,6 +5,7 @@ const maxPriceInput = document.getElementById("maxPrice");
 const resetBtn = document.getElementById("resetFilter");
 const resultCountEl = document.getElementById("resultCount");
 const sortFilter = document.getElementById("sortFilter");
+const priceBasisEl = document.getElementById("priceBasis");
 const filterSummaryContainer = document.getElementById("filterSummaryContainer");
 const filterSummaryText = document.getElementById("filterSummaryText");
 const chipGroup = document.getElementById("chipGroup");
@@ -37,12 +38,38 @@ function render(list) {
         <div class="meta">
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name} <span style="font-size: 11px; font-weight: normal; color: #888; margin-left: 4px;">(${watch.size}, ${watch.material})</span></div>
-          <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices.retail.display}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.prices.korea_market.display}</div>
+          <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices?.retail?.display || "N/A"}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.kakaku_krw_domestic_display || watch.prices?.korea_market?.display || "N/A"}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.kakaku_krw_asia_display || watch.prices?.global_market?.display || "N/A"}</div>
         </div>
       </article>
     </a>
   `).join("");
+}
+
+function getPriceValueByBasis(watch, basis) {
+  if (!watch) return null;
+
+  const retail = watch.prices?.retail?.value ?? null;
+  const market = watch.prices?.korea_market?.value ?? null;
+  const kakaku = watch.kakaku_krw_domestic ?? null;
+
+  switch (basis) {
+    case "RETAIL":
+      return retail;
+    default:
+      return retail;
+  }
+}
+
+function compareNullableNumbers(a, b, direction /* 'asc'|'desc' */) {
+  const aNull = a === null || a === undefined || Number.isNaN(a);
+  const bNull = b === null || b === undefined || Number.isNaN(b);
+  if (aNull && bNull) return 0;
+  if (aNull) return 1; // nulls last
+  if (bNull) return -1;
+
+  return direction === "asc" ? a - b : b - a;
 }
 
 function applyFilter() {
@@ -50,13 +77,14 @@ function applyFilter() {
   const minPrice = parsePrice(minPriceInput.value);
   const maxPrice = parsePrice(maxPriceInput.value);
   const sortValue = sortFilter.value;
+  const priceBasis = priceBasisEl ? priceBasisEl.value : "RETAIL";
 
   const filtered = allWatches.filter(watch => {
     // 1. 브랜드 필터
     const matchBrand = (brandValue === "ALL") || (watch.brand === brandValue);
     
-    // 2. 가격 필터 (공식판매가 기준)
-    const price = watch.prices.retail.value;
+    // 2. 가격 필터 (선택한 기준)
+    const price = getPriceValueByBasis(watch, priceBasis);
     
     let matchPrice = true;
     if (price !== null) {
@@ -73,9 +101,11 @@ function applyFilter() {
   // 3. 정렬 (공식판매가 기준)
   if (sortValue !== "NONE") {
     filtered.sort((a, b) => {
-      const pA = a.prices.retail.value;
-      const pB = b.prices.retail.value;
-      return sortValue === "LOW_PRICE" ? pA - pB : pB - pA;
+      const pA = getPriceValueByBasis(a, priceBasis);
+      const pB = getPriceValueByBasis(b, priceBasis);
+      return sortValue === "LOW_PRICE"
+        ? compareNullableNumbers(pA, pB, "asc")
+        : compareNullableNumbers(pA, pB, "desc");
     });
   }
 
@@ -144,7 +174,16 @@ function handlePriceInput(e) {
 
 fetch("final/data/watches_ui.json")
   .then(r => r.json())
-  .then(watches => {
+  .then(async watches => {
+    // Kakaku API 최신 가격을 ref 기준으로 합치기 (동적 필드: kakaku_*)
+    try {
+      const apiData = await (window.KakakuAPI?.loadLatestPrices?.() ?? Promise.resolve(null));
+      const priceMap = window.KakakuAPI?.buildPriceMap?.(apiData) ?? Object.create(null);
+      window.KakakuAPI?.applyPricesToWatches?.(watches, priceMap);
+    } catch (_) {
+      // 실패 시 그냥 정적 데이터로 렌더링
+    }
+
     allWatches = watches;
 
     // 브랜드 목록 만들기
@@ -159,12 +198,14 @@ fetch("final/data/watches_ui.json")
     // 이벤트 리스너
     brandFilter.addEventListener("change", applyFilter);
     sortFilter.addEventListener("change", applyFilter);
+    if (priceBasisEl) priceBasisEl.addEventListener("change", applyFilter);
     minPriceInput.addEventListener("input", handlePriceInput);
     maxPriceInput.addEventListener("input", handlePriceInput);
     
     resetBtn.addEventListener("click", () => {
       brandFilter.value = "ALL";
       sortFilter.value = "NONE";
+      if (priceBasisEl) priceBasisEl.value = "RETAIL";
       minPriceInput.value = "";
       maxPriceInput.value = "";
       applyFilter();

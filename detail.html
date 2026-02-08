@@ -22,6 +22,19 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    // Kakaku API URL 설정 (index.html과 동일 정책)
+    const djangoOrigin =
+      window.location.port === "8000"
+        ? window.location.origin
+        : (window.KAKAKU_API_ORIGIN || "http://127.0.0.1:8000");
+
+    window.KAKAKU_LATEST_PRICES_URL = new URL(
+      "/api/kakaku/latest-prices/",
+      djangoOrigin
+    ).toString();
+  </script>
+  <script src="./web/js/kakaku_api.js"></script>
   <script src="./detail.js"></script>
 </body>
 </html>

@@ -22,6 +22,12 @@
                 <input type="text" id="maxPrice" placeholder="최대" class="price-input">
             </div>
             <div class="filter-item">
+                <label>가격 기준 </label>
+                <select id="priceBasis">
+                    <option value="RETAIL">retail</option>
+                </select>
+            </div>
+            <div class="filter-item">
                 <label>정렬 </label>
                 <select id="sortFilter">
                     <option value="NONE">정렬 없음</option>
@@ -52,6 +58,22 @@
         <p>모든 상표, 모델명 및 이미지는 각 소유자의 자산입니다.</p>
     </footer>
 
+    <script>
+      // Kakaku API URL 설정
+      // - Django(보통 :8000)로 이 페이지를 서빙하면: same-origin(/api/...) 호출이 가장 안전(CORS 없음)
+      // - Live Server(보통 :5500)로 정적 웹을 띄우면: Django(:8000)로 직접 호출해야 함
+      //   (이 경우 Django 쪽에 CORS 허용이 필요할 수 있음)
+      const djangoOrigin =
+        window.location.port === "8000"
+          ? window.location.origin
+          : (window.KAKAKU_API_ORIGIN || "http://127.0.0.1:8000");
+
+      window.KAKAKU_LATEST_PRICES_URL = new URL(
+        "/api/kakaku/latest-prices/",
+        djangoOrigin
+      ).toString();
+    </script>
+    <script src="./web/js/kakaku_api.js"></script>
     <script src="./app.js"></script>
 </body>
 </html>

@@ -28,9 +28,25 @@ async function fetchDescription(ref) {
   return null;
 }
 
+function formatKakakuRecordedAt(isoString) {
+  if (!isoString) return null;
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+}
+
 fetch("final/data/watches_ui.json")
   .then(r => r.json())
   .then(async list => {
+    // Kakaku API 최신 가격을 ref 기준으로 합치기 (동적 필드: kakaku_*)
+    try {
+      const apiData = await (window.KakakuAPI?.loadLatestPrices?.() ?? Promise.resolve(null));
+      const priceMap = window.KakakuAPI?.buildPriceMap?.(apiData) ?? Object.create(null);
+      window.KakakuAPI?.applyPricesToWatches?.(list, priceMap);
+    } catch (_) {
+      // 실패 시 그냥 정적 데이터로 표시
+    }
+
     const watch = list.find(w => w.ref === ref);
 
     if (!watch) {
@@ -78,12 +94,19 @@ fetch("final/data/watches_ui.json")
             </div>
             <div class="price-item">
               <span class="spec-label">Global Market</span>
-              <span class="spec-value">${watch.prices?.global_market?.display || "N/A"}</span>
+              <span class="spec-value">${watch.kakaku_krw_asia_display || watch.prices?.global_market?.display || "N/A"}</span>
             </div>
             <div class="price-item">
               <span class="spec-label" style="font-style: normal; font-weight: bold; color: #222;">Korea Market</span>
-              <span class="spec-value" style="font-weight: bold; color: #e44d26;">${watch.prices?.korea_market?.display || "N/A"}</span>
+              <span class="spec-value" style="font-weight: bold; color: #e44d26;">${watch.kakaku_krw_domestic_display || watch.prices?.korea_market?.display || "N/A"}</span>
             </div>
+            ${
+              watch.kakaku_recorded_at
+                ? `<div style="margin-top: 8px; font-size: 12px; color: #777;">
+                     업데이트: ${formatKakakuRecordedAt(watch.kakaku_recorded_at) || watch.kakaku_recorded_at}
+                   </div>`
+                : ""
+            }
           </div>
         </div>
 
