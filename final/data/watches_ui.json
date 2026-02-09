@@ -35,5 +35,24 @@
       "global_market": { "display": "₩14,200,000", "value": 14200000 }
     },
     "image": "final/image/normalized/m124270-0001.webp"
+  },
+  {
+    "ref": "m126610ln-0001",
+    "brand": "Rolex",
+    "name": "Submariner Date",
+    "material": "steel",
+    "dial_color": "Black",
+    "size": "41mm",
+    "thickness": "12.5mm",
+    "water_resistance": "300m",
+    "movement": "Calibre 3235",
+    "power_reserve": "70 hours",
+    "description": "<p>롤렉스 서브마리너 데이트 126610LV는 일명 '스타벅스'라는 별칭으로 불리며 전 세계 시계 애호가들의 찬사를 받는 모델입니다.</p><p>41mm 케이스 사이즈로 업그레이드되면서 더욱 완벽한 비율을 갖추게 되었으며, 세라크롬 베젤 인서트의 깊은 그린 컬러와 블랙 다이얼의 대비가 특징입니다. 차세대 무브먼트인 3235를 탑재하여 약 70시간의 파워리저브를 제공합니다.</p>",
+    "prices": {
+      "retail": { "display": "₩17,500,000", "value": 17500000 },
+      "korea_market": { "display": "₩19,500,000", "value": 19500000 },
+      "global_market": { "display": "₩21,000,000", "value": 21000000 }
+    },
+    "image": "final/image/normalized/m126610ln-0001.webp"
   }
 ]
