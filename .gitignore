@@ -11,3 +11,6 @@ __pycache__/
 # 나중에 커질 수 있는 것들 (선택)
 node_modules/
 
+# Image Source
+final/image/original_png/
+

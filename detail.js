@@ -62,7 +62,7 @@ fetch("final/data/watches_ui.json")
     const externalDesc = await fetchDescription(watch.ref);
 
     // 기본 이미지 처리
-    const imageUrl = watch.image || "final/image/no-image.png";
+    const imageUrl = watch.image || "final/image/no-image.webp";
 
     detailEl.innerHTML = `
       <div class="detail-container">
