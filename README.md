@@ -12,7 +12,8 @@
 | | `detail.js` | 상세 정보 페이지 로직 |
 | | `style.css` | 프로젝트 전체 스타일시트 |
 | **Data** | `final/data/watches_ui.json` | 시계 데이터베이스 (JSON 포맷) |
-| **Assets** | `final/image/normalized/` | 규격화된 상품 이미지 폴더 |
+| **Assets** | `final/image/normalized/` | 규격화된 상품 이미지 폴더 (.webp) |
+| **Pipeline** | `work/04_image/` | 1) `01_process_images.py` (가공) -> 2) `02_deploy_to_web.py` (배포) |
 | **Config** | `.gitignore` | Git 관리 제외 설정 파일 |
 | | `README.md` | 프로젝트 가이드 및 구조 문서 |
 

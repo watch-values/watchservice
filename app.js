@@ -38,9 +38,9 @@ function render(list) {
         <div class="meta">
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name} <span style="font-size: 11px; font-weight: normal; color: #888; margin-left: 4px;">(${watch.size}, ${watch.material})</span></div>
-          <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices?.retail?.display || "N/A"}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.ext_krw_domestic_display || watch.prices?.korea_market?.display || "N/A"}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.ext_krw_asia_display || watch.prices?.global_market?.display || "N/A"}</div>
+          <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices?.retail?.display || '<span class="loading-shimmer">₩00,000,000</span>'}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.ext_krw_domestic_display || (watch.prices?.korea_market?.display ? `<span class="loading-shimmer">${watch.prices.korea_market.display}</span>` : '<span class="loading-shimmer">₩00,000,000</span>')}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.ext_krw_asia_display || (watch.prices?.global_market?.display ? `<span class="loading-shimmer">${watch.prices.global_market.display}</span>` : '<span class="loading-shimmer">₩00,000,000</span>')}</div>
         </div>
       </article>
     </a>
@@ -177,18 +177,10 @@ function handlePriceInput(e) {
   applyFilter();
 }
 
-fetch("final/data/watches_ui.json")
+// 초기 데이터 로드 (JSON 캐시 버스팅 적용)
+fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
   .then(r => r.json())
   .then(async watches => {
-    // API 최신 가격을 ref 기준으로 합치기
-    try {
-      const apiData = await (window.PriceAPI?.loadLatestPrices?.() ?? Promise.resolve(null));
-      const priceMap = window.PriceAPI?.buildPriceMap?.(apiData) ?? Object.create(null);
-      window.PriceAPI?.applyPricesToWatches?.(watches, priceMap);
-    } catch (_) {
-      // 실패 시 그냥 정적 데이터로 렌더링
-    }
-
     allWatches = watches;
 
     // 브랜드 목록 만들기
@@ -216,6 +208,30 @@ fetch("final/data/watches_ui.json")
       applyFilter();
     });
 
-    // 최초 렌더
+    // 1. 먼저 정적 데이터로 렌더링 (글로벌 가격은 로딩 중 표시됨)
     applyFilter();
+
+    // 2. 최신 API 가격 로드 (비동기)
+    try {
+      // 마켓 시세와 리테일가 병렬 로드
+      const [marketData, retailData] = await Promise.all([
+        window.PriceAPI?.loadLatestPrices?.() ?? Promise.resolve(null),
+        window.PriceAPI?.loadRetailPrices?.() ?? Promise.resolve(null)
+      ]);
+
+      if (marketData) {
+        const marketMap = window.PriceAPI.buildPriceMap(marketData);
+        window.PriceAPI.applyPricesToWatches(allWatches, marketMap);
+      }
+
+      if (retailData) {
+        const retailMap = window.PriceAPI.buildPriceMap(retailData);
+        window.PriceAPI.applyPricesToWatches(allWatches, retailMap);
+      }
+      
+      // 3. API 데이터 반영하여 다시 필터링 및 렌더링
+      applyFilter();
+    } catch (err) {
+      console.error("Dynamic price load failed:", err);
+    }
   });

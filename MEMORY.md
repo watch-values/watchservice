@@ -26,13 +26,40 @@
 - **Library**: `marked.js` (Markdown Parsing)
 - **API Helper**: `web/js/price_api.js` (현재 캐시 버전: **v6**)
 - **Data Source**: Django 기반 REST API 및 로컬 JSON
+- **Image Pipeline**: `work/04_image/` (가공) -> `final/image/` (배포)
+  - 1단계: `input/브랜드명/`에 원본 이미지 넣기.
+  - 2단계: `scripts/01_process_images.py` 실행 (배경 제거 및 정규화).
+  - 3단계: `scripts/02_deploy_to_web.py` 실행 (WebP 변환 및 웹 배포).
 
 ### 4. 파일별 역할 (File Roles)
 - `app.js`: 메인 목록 렌더링, 필터링 로직, API 데이터 매핑 총괄.
 - `detail.js`: 상세 페이지 렌더링 및 외부 마크다운 파일 로드 로직.
 - `index.html` / `detail.html`: 각각 목록 및 상세 페이지의 뼈대.
-- `style.css`: 프로젝트 전체의 디자인 시스템 (반응형 레이아웃 포함).
+- `style.css`: 프로젝트 전체의 디자인 시스템 (반응형 레이아웃 및 로딩 효과 포함).
 - `MEMORY.md`: 프로젝트의 연속성을 위한 가이드라인 (현재 파일).
+
+### 5. 새 시계 추가 워크플로우 (Daily Workflow)
+새로운 시계를 추가할 때는 아래 **3단계**만 따라하세요.
+
+#### **Step 1. 데이터 등록**
+- `final/data/watches_ui.json` 파일을 열고 새 시계 정보를 추가합니다.
+- **주의**: `image` 경로는 반드시 `.webp` 확장자로 적어주세요. (예: `final/image/normalized/m12345.webp`)
+
+#### **Step 2. 이미지 가공 및 배포**
+1. **원본 넣기**: `work/04_image/input/{브랜드명}/` 폴더에 원본 PNG 파일을 넣습니다.
+2. **이미지 가공**: 터미널에서 `work/04_image` 폴더로 이동 후 아래 명령 실행:
+   ```bash
+   python3 scripts/01_process_images.py
+   ```
+3. **웹 배포**: 가공이 끝나면 아래 명령 실행:
+   ```bash
+   python3 scripts/02_deploy_to_web.py
+   ```
+
+#### **Step 3. 최종 확인 및 업로드**
+1. **로컬 확인**: `python3 -m http.server 8001` 실행 후 `localhost:8001`에서 확인.
+2. **업데이트**: 가격이 안 보이면 브라우저 콘솔에 `PriceAPI.clearCache()` 입력 후 새로고침.
+3. **깃 push**: 모든 게 완벽하면 `git push`로 실제 사이트에 반영.
 
 ---
 
