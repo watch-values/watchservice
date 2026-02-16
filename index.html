@@ -8,6 +8,11 @@
 <body>
     <main class="page">
         <h1 class ="title">Watch Service</h1>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="모델명, 레퍼런스 등으로 검색하세요..." class="search-input">
+        </div>
+
         <div class="filter-group">
             <div class="filter-item">
                 <label>브랜드 </label>
@@ -25,6 +30,8 @@
                 <label>가격 기준 </label>
                 <select id="priceBasis">
                     <option value="RETAIL">retail</option>
+                    <option value="MARKET">market</option>
+                    <option value="GLOBAL">global</option>
                 </select>
             </div>
             <div class="filter-item">

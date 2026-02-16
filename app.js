@@ -1,5 +1,6 @@
 const grid = document.getElementById("grid");
 const brandFilter = document.getElementById("brandFilter");
+const searchInput = document.getElementById("searchInput");
 const minPriceInput = document.getElementById("minPrice");
 const maxPriceInput = document.getElementById("maxPrice");
 const resetBtn = document.getElementById("resetFilter");
@@ -33,14 +34,14 @@ function render(list) {
     <a href="./detail.html?ref=${encodeURIComponent(watch.ref)}" style="text-decoration:none; color:inherit;">
       <article class="card">
         <div class="thumb">
-          <img src="${watch.image}" alt="${watch.brand} ${watch.name}">
+          <img src="${watch.image}" alt="${watch.brand} ${watch.name}" onerror="this.src='https://via.placeholder.com/220x220?text=No+Image'">
         </div>
         <div class="meta">
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name} <span style="font-size: 11px; font-weight: normal; color: #888; margin-left: 4px;">(${watch.size}, ${watch.material})</span></div>
-          <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices?.retail?.display || '<span class="loading-shimmer">₩00,000,000</span>'}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.ext_krw_domestic_display || (watch.prices?.korea_market?.display ? `<span class="loading-shimmer">${watch.prices.korea_market.display}</span>` : '<span class="loading-shimmer">₩00,000,000</span>')}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.ext_krw_asia_display || (watch.prices?.global_market?.display ? `<span class="loading-shimmer">${watch.prices.global_market.display}</span>` : '<span class="loading-shimmer">₩00,000,000</span>')}</div>
+          <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices?.retail?.display || 'N/A'}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.ext_krw_domestic_display || 'N/A'}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.ext_krw_asia_display || 'N/A'}</div>
         </div>
       </article>
     </a>
@@ -51,19 +52,19 @@ function getPriceValueByBasis(watch, basis) {
   if (!watch) return null;
 
   const retail = watch.prices?.retail?.value ?? null;
-  const market = watch.prices?.korea_market?.value ?? null;
-  const dynamic = watch.ext_krw_domestic ?? null;
+  const domestic = watch.ext_krw_domestic ?? null;
+  const asia = watch.ext_krw_asia ?? null;
 
   switch (basis) {
     case "RETAIL":
       return retail;
     case "MARKET":
-      return market;
-    case "KAKAKU":
-      return dynamic;
+      return domestic;
+    case "GLOBAL":
+      return asia;
     case "AUTO":
     default:
-      return dynamic ?? market ?? retail;
+      return domestic ?? asia ?? retail;
   }
 }
 
@@ -79,6 +80,7 @@ function compareNullableNumbers(a, b, direction /* 'asc'|'desc' */) {
 
 function applyFilter() {
   const brandValue = brandFilter.value;
+  const searchText = searchInput.value.toLowerCase().trim();
   const minPrice = parsePrice(minPriceInput.value);
   const maxPrice = parsePrice(maxPriceInput.value);
   const sortValue = sortFilter.value;
@@ -88,7 +90,17 @@ function applyFilter() {
     // 1. 브랜드 필터
     const matchBrand = (brandValue === "ALL") || (watch.brand === brandValue);
     
-    // 2. 가격 필터 (선택한 기준)
+    // 2. 검색어 필터 (브랜드명, 모델명, 레퍼런스 번호 포함)
+    const searchTarget = `${watch.brand} ${watch.name} ${watch.ref}`.toLowerCase();
+    const matchSearch = !searchText || searchTarget.includes(searchText);
+
+    // 3. 서버 정보 필터 (글로벌 시세가 있는 모델만 출력)
+    // ext_recorded_at이 있거나, 이미 ext_krw_domestic_display 또는 ext_krw_asia_display 값이 있는 경우 출력 대상
+    const hasPriceInfo = (watch.ext_krw_domestic_display && watch.ext_krw_domestic_display !== "N/A") || 
+                         (watch.ext_krw_asia_display && watch.ext_krw_asia_display !== "N/A") ||
+                         !!watch.ext_recorded_at;
+
+    // 4. 가격 필터 (선택한 기준)
     const price = getPriceValueByBasis(watch, priceBasis);
     
     let matchPrice = true;
@@ -100,7 +112,7 @@ function applyFilter() {
       if (minPrice !== null || maxPrice !== null) matchPrice = false;
     }
 
-    return matchBrand && matchPrice;
+    return matchBrand && matchSearch && hasPriceInfo && matchPrice;
   });
 
   // 3. 정렬 (공식판매가 기준)
@@ -120,11 +132,17 @@ function applyFilter() {
 
 function updateFilterSummaryAndChips() {
   const brandValue = brandFilter.value;
+  const searchText = searchInput.value.trim();
   const minPriceRaw = minPriceInput.value;
   const maxPriceRaw = maxPriceInput.value;
 
   const summaryParts = [];
   const chips = [];
+
+  if (searchText) {
+    summaryParts.push(`검색어 "${searchText}"`);
+    chips.push({ label: `검색어: ${searchText}`, type: 'search' });
+  }
 
   if (brandValue !== "ALL") {
     summaryParts.push(`브랜드 ${brandValue}`);
@@ -163,6 +181,7 @@ function updateFilterSummaryAndChips() {
 
 // 필터 제거 기능을 window 객체에 할당하여 전역에서 접근 가능하게 함
 window.removeFilter = function(type) {
+  if (type === 'search') searchInput.value = "";
   if (type === 'brand') brandFilter.value = "ALL";
   if (type === 'min') minPriceInput.value = "";
   if (type === 'max') maxPriceInput.value = "";
@@ -194,6 +213,7 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
 
     // 이벤트 리스너
     brandFilter.addEventListener("change", applyFilter);
+    searchInput.addEventListener("input", applyFilter);
     sortFilter.addEventListener("change", applyFilter);
     if (priceBasisEl) priceBasisEl.addEventListener("change", applyFilter);
     minPriceInput.addEventListener("input", handlePriceInput);
@@ -201,6 +221,7 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
     
     resetBtn.addEventListener("click", () => {
       brandFilter.value = "ALL";
+      searchInput.value = "";
       sortFilter.value = "NONE";
       if (priceBasisEl) priceBasisEl.value = "RETAIL";
       minPriceInput.value = "";

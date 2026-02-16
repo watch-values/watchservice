@@ -17,6 +17,7 @@
   // 캐시 키 버전 관리
   const CACHE_KEY = "dynamic_prices_cache_v2";
   const RETAIL_CACHE_KEY = "retail_prices_cache_v1";
+  const PERSISTENT_CACHE_KEY = "persistent_last_known_prices_v1";
   const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
   function nowMs() {
@@ -28,6 +29,23 @@
       return JSON.parse(text);
     } catch (_) {
       return null;
+    }
+  }
+
+  function readPersistentCache() {
+    try {
+      const raw = localStorage.getItem(PERSISTENT_CACHE_KEY);
+      return raw ? safeJsonParse(raw) || {} : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function writePersistentCache(data) {
+    try {
+      localStorage.setItem(PERSISTENT_CACHE_KEY, JSON.stringify(data));
+    } catch (_) {
+      // ignore
     }
   }
 
@@ -152,45 +170,92 @@
   function applyPricesToWatches(watches, priceMap) {
     if (!Array.isArray(watches) || !priceMap) return watches;
 
+    const persistentCache = readPersistentCache();
     let appliedCount = 0;
+
     for (const w of watches) {
       if (!w || !w.ref) continue;
       const cleanRef = String(w.ref).trim().toLowerCase();
       const hit = priceMap[cleanRef];
-      if (!hit || !hit.price) continue;
+      const saved = persistentCache[cleanRef] || {};
 
-      const p = hit.price;
+      if (!persistentCache[cleanRef]) persistentCache[cleanRef] = {};
 
-      if (hit.isRetail) {
-        // Apply to retail field
-        const retailNum = parsePriceToNumber(p.krw);
-        if (retailNum) {
-          if (!w.prices) w.prices = {};
-          w.prices.retail = {
-            display: formatPriceDisplay(retailNum),
-            value: retailNum
-          };
+      if (hit && hit.price) {
+        const p = hit.price;
+
+        if (hit.isRetail) {
+          const retailNum = parsePriceToNumber(p.krw);
+          if (retailNum) {
+            const display = formatPriceDisplay(retailNum);
+            if (!w.prices) w.prices = {};
+            w.prices.retail = { display, value: retailNum };
+            persistentCache[cleanRef].retail = { display, value: retailNum, recorded_at: hit.recorded_at };
+          }
+        } else {
+          const domesticNum = parsePriceToNumber(p.krw_domestic);
+          const asiaNum = parsePriceToNumber(p.krw_asia);
+
+          if (domesticNum) {
+            w.ext_krw_domestic = domesticNum;
+            const domesticDisplay = formatPriceDisplay(domesticNum);
+            w.ext_krw_domestic_display = domesticDisplay;
+            persistentCache[cleanRef].domestic = { display: domesticDisplay, value: domesticNum, recorded_at: hit.recorded_at };
+          }
+          if (asiaNum) {
+            w.ext_krw_asia = asiaNum;
+            const asiaDisplay = formatPriceDisplay(asiaNum);
+            w.ext_krw_asia_display = asiaDisplay;
+            persistentCache[cleanRef].asia = { display: asiaDisplay, value: asiaNum, recorded_at: hit.recorded_at };
+          }
+          if (domesticNum || asiaNum) {
+            w.ext_recorded_at = hit.recorded_at ?? null;
+          }
         }
-      } else {
-        // Apply to market fields (existing logic)
-        w.ext_jpy = p.jpy ?? null;
-        w.ext_krw_domestic_raw = p.krw_domestic ?? null;
-        w.ext_krw_asia_raw = p.krw_asia ?? null;
-        w.ext_yen_rate = p.yen_rate ?? null;
-        w.ext_recorded_at = hit.recorded_at ?? null;
-
-        const domesticNum = parsePriceToNumber(p.krw_domestic);
-        const asiaNum = parsePriceToNumber(p.krw_asia);
-
-        w.ext_krw_domestic = domesticNum;
-        w.ext_krw_asia = asiaNum;
-        w.ext_krw_domestic_display = formatPriceDisplay(domesticNum);
-        w.ext_krw_asia_display = formatPriceDisplay(asiaNum);
+        appliedCount += 1;
       }
 
-      appliedCount += 1;
+      // Final Fallback Pass for this watch (handles both 'no hit' and 'null price in hit')
+      const s = persistentCache[cleanRef] || {};
+
+      // 1. Domestic Market
+      if (w.ext_krw_domestic_display === undefined || w.ext_krw_domestic_display === "N/A") {
+        if (s.domestic) {
+          w.ext_krw_domestic = s.domestic.value;
+          w.ext_krw_domestic_display = s.domestic.display;
+          if (!w.ext_recorded_at) w.ext_recorded_at = s.domestic.recorded_at;
+        } else if (w.ext_krw_domestic_display === undefined) {
+          // JSON 자체에 이미 값이 있다면 유지, 없으면 N/A
+          w.ext_krw_domestic_display = w.ext_krw_domestic_display || "N/A";
+        }
+      }
+
+      // 2. Asia Market
+      if (w.ext_krw_asia_display === undefined || w.ext_krw_asia_display === "N/A") {
+        if (s.asia) {
+          w.ext_krw_asia = s.asia.value;
+          w.ext_krw_asia_display = s.asia.display;
+          if (!w.ext_recorded_at) w.ext_recorded_at = s.asia.recorded_at;
+        } else if (w.ext_krw_asia_display === undefined) {
+          // JSON 자체에 이미 값이 있다면 유지, 없으면 N/A
+          w.ext_krw_asia_display = w.ext_krw_asia_display || "N/A";
+        }
+      }
+
+      // 3. Retail
+      if (!w.prices) w.prices = {};
+      if (!w.prices.retail || w.prices.retail.display === "N/A" || w.prices.retail.display === undefined) {
+        if (s.retail) {
+          w.prices.retail = { display: s.retail.display, value: s.retail.value };
+          if (!w.ext_recorded_at) w.ext_recorded_at = s.retail.recorded_at;
+        } else {
+          if (!w.prices.retail) w.prices.retail = { display: "N/A" };
+          else if (w.prices.retail.display === undefined) w.prices.retail.display = "N/A";
+        }
+      }
     }
 
+    writePersistentCache(persistentCache);
     console.log(`[PriceAPI] updated prices: ${appliedCount}/${watches.length}`);
     return watches;
   }

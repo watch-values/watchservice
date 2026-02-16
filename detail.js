@@ -74,10 +74,10 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
 async function renderInitial(list) {
   const watch = list.find(w => w.ref === ref);
 
-  if (!watch) {
+  if (!watch || !watch.ext_recorded_at) {
     detailEl.innerHTML = `
       <div class="detail-container" style="justify-content: center; padding: 100px 0;">
-        <p style="color: #888;">해당 상품을 찾을 수 없습니다. (Ref: ${ref ?? "N/A"})</p>
+        <p style="color: #888;">해당 상품을 찾을 수 없거나 시장 정보가 없는 모델입니다. (Ref: ${ref ?? "N/A"})</p>
       </div>
     `;
     return;
@@ -119,11 +119,11 @@ async function renderInitial(list) {
           </div>
           <div class="price-item">
             <span class="spec-label">Global Market</span>
-            <span class="spec-value">${watch.ext_krw_asia_display || (watch.prices?.global_market?.display ? `<span class="loading-shimmer">${watch.prices.global_market.display}</span>` : '<span class="loading-shimmer">₩00,000,000</span>')}</span>
+            <span class="spec-value">${watch.ext_krw_asia_display || '<span class="loading-shimmer">₩00,000,000</span>'}</span>
           </div>
           <div class="price-item">
             <span class="spec-label" style="font-style: normal; font-weight: bold; color: #222;">Korea Market</span>
-            <span class="spec-value" style="font-weight: bold; color: #e44d26;">${watch.ext_krw_domestic_display || (watch.prices?.korea_market?.display ? `<span class="loading-shimmer">${watch.prices.korea_market.display}</span>` : '<span class="loading-shimmer">₩00,000,000</span>')}</span>
+            <span class="spec-value" style="font-weight: bold; color: #e44d26;">${watch.ext_krw_domestic_display || '<span class="loading-shimmer">₩00,000,000</span>'}</span>
           </div>
           ${
             watch.ext_recorded_at
