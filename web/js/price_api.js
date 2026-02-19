@@ -195,6 +195,7 @@
         } else {
           const domesticNum = parsePriceToNumber(p.krw_domestic);
           const asiaNum = parsePriceToNumber(p.krw_asia);
+          const localMarketNum = parsePriceToNumber(p.local_market);
 
           if (domesticNum) {
             w.ext_krw_domestic = domesticNum;
@@ -208,7 +209,13 @@
             w.ext_krw_asia_display = asiaDisplay;
             persistentCache[cleanRef].asia = { display: asiaDisplay, value: asiaNum, recorded_at: hit.recorded_at };
           }
-          if (domesticNum || asiaNum) {
+          if (localMarketNum) {
+            w.ext_local_market = localMarketNum;
+            const localMarketDisplay = formatPriceDisplay(localMarketNum);
+            w.ext_local_market_display = localMarketDisplay;
+            persistentCache[cleanRef].local_market = { display: localMarketDisplay, value: localMarketNum, recorded_at: hit.recorded_at };
+          }
+          if (domesticNum || asiaNum || localMarketNum) {
             w.ext_recorded_at = hit.recorded_at ?? null;
           }
         }
@@ -239,6 +246,17 @@
         } else if (w.ext_krw_asia_display === undefined) {
           // JSON 자체에 이미 값이 있다면 유지, 없으면 N/A
           w.ext_krw_asia_display = w.ext_krw_asia_display || "N/A";
+        }
+      }
+
+      // 2-1. Local Market
+      if (w.ext_local_market_display === undefined || w.ext_local_market_display === "N/A") {
+        if (s.local_market) {
+          w.ext_local_market = s.local_market.value;
+          w.ext_local_market_display = s.local_market.display;
+          if (!w.ext_recorded_at) w.ext_recorded_at = s.local_market.recorded_at;
+        } else if (w.ext_local_market_display === undefined) {
+          w.ext_local_market_display = w.ext_local_market_display || "N/A";
         }
       }
 

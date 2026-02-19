@@ -40,7 +40,7 @@ function render(list) {
           <div class="brand">${watch.brand}</div>
           <div class="name">${watch.name} <span style="font-size: 11px; font-weight: normal; color: #888; margin-left: 4px;">(${watch.size}, ${watch.material})</span></div>
           <div class="price"><span style="display: inline-block; width: 48px; color: #888;">retail</span>${watch.prices?.retail?.display || 'N/A'}</div>
-          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.ext_krw_domestic_display || 'N/A'}</div>
+          <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">market</span>${watch.ext_local_market_display || 'N/A'}</div>
           <div class="price" style="margin-top: 2px;"><span style="display: inline-block; width: 48px; color: #888;">global</span>${watch.ext_krw_asia_display || 'N/A'}</div>
         </div>
       </article>
@@ -53,18 +53,19 @@ function getPriceValueByBasis(watch, basis) {
 
   const retail = watch.prices?.retail?.value ?? null;
   const domestic = watch.ext_krw_domestic ?? null;
+  const localMarket = watch.ext_local_market ?? null;
   const asia = watch.ext_krw_asia ?? null;
 
   switch (basis) {
     case "RETAIL":
       return retail;
     case "MARKET":
-      return domestic;
+      return localMarket ?? domestic;
     case "GLOBAL":
       return asia;
     case "AUTO":
     default:
-      return domestic ?? asia ?? retail;
+      return localMarket ?? domestic ?? asia ?? retail;
   }
 }
 
