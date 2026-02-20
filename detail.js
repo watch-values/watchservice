@@ -123,7 +123,7 @@ async function renderInitial(list) {
           </div>
           <div class="price-item">
             <span class="spec-label" style="font-style: normal; font-weight: bold; color: #222;">Korea Market</span>
-            <span class="spec-value" style="font-weight: bold; color: #e44d26;">${watch.ext_krw_domestic_display || '<span class="loading-shimmer">₩00,000,000</span>'}</span>
+            <span class="spec-value" style="font-weight: bold; color: #e44d26;">${watch.ext_local_market_display || '<span class="loading-shimmer">₩00,000,000</span>'}</span>
           </div>
           ${
             watch.ext_recorded_at
