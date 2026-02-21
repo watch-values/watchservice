@@ -7,7 +7,7 @@ from PIL import Image
 # ==========================================
 # 1. 설정 (Configuration)
 # ==========================================
-MARKET_API_URL = "https://limdoohwan.pythonanywhere.com/api/kakaku/latest-prices/"
+MARKET_API_URL = "https://limdoohwan.pythonanywhere.com/api/market/latest-prices/"
 RETAIL_API_URL = "https://limdoohwan.pythonanywhere.com/api/retail/latest-prices/"
 SOURCE_IMAGE_DIR = "/Users/doolim/Desktop/watchservice/03_image/processed/01_rolex/step1_normalized"
 
@@ -113,25 +113,20 @@ def main():
     for ref in all_refs:
         spec = all_specs.get(ref, {})
         m_item = market_data.get(ref, {})
-        r_item = retail_data.get(ref, {})
-        src_path = image_refs[ref]
+        img_name = image_refs[ref]
         
         # 기존 데이터 (Last Known Value)
         old_item = existing_data.get(ref, {})
         
         # 기본 정보 구성
         brand = spec.get('brand') or old_item.get('brand') or 'Rolex'
-        name = spec.get('line', '') or spec.get('model', '') or r_item.get('model_name') or m_item.get('model_name') or old_item.get('name') or "Watch"
+        name = spec.get('line', '') or spec.get('model', '') or old_item.get('name') or "Watch"
         
         # 스펙 필드 업데이트 (새 데이터가 없으면 기존 데이터 유지)
         def get_field(field_name, new_val, default='N/A'):
             if new_val and new_val != 'N/A':
                 return new_val
             return old_item.get(field_name) or default
-
-        # 스펙 데이터에서 시세 정보가 있는지 추가 확인
-        spec_domestic = spec.get('ext_krw_domestic_display') or spec.get('market_price')
-        spec_asia = spec.get('ext_krw_asia_display') or spec.get('global_price')
 
         watch_obj = {
             "ref": ref,
@@ -147,89 +142,39 @@ def main():
             "description": old_item.get('description') or f"<p>{brand} {name} {ref} 모델입니다.</p>",
             "prices": {
                 "retail": {
-                    "display": r_item.get('price', {}).get('krw') or spec.get('price') or old_item.get('prices', {}).get('retail', {}).get('display') or 'N/A',
+                    "display": "N/A",
                     "value": None
                 }
             },
-            "image": f"final/image/normalized/{ref}.webp"
+            "image": f"final/image/normalized/{ref}.webp",
+            "ext_krw_domestic_display": "N/A",
+            "ext_krw_domestic": None,
+            "ext_krw_asia_display": "N/A",
+            "ext_krw_asia": None,
+            "ext_local_market_display": "N/A",
+            "ext_local_market": None,
+            "ext_recorded_at": None
         }
-        
-        # Retail value parsing
-        r_display = watch_obj["prices"]["retail"]["display"]
-        if r_display and r_display != "N/A":
-            try:
-                watch_obj["prices"]["retail"]["value"] = int(''.join(filter(str.isdigit, str(r_display))))
-            except:
-                watch_obj["prices"]["retail"]["value"] = old_item.get('prices', {}).get('retail', {}).get('value')
-        else:
-            watch_obj["prices"]["retail"]["value"] = old_item.get('prices', {}).get('retail', {}).get('value')
 
-        # Market prices (동적 업데이트 + 기존 데이터 유지 + 스펙 데이터 활용)
-        # 1. 국내 시세
-        new_domestic = m_item.get("price", {}).get("krw_domestic")
-        if new_domestic and str(new_domestic).strip():
-            watch_obj["ext_krw_domestic_display"] = f"₩{new_domestic}".replace("원", "")
-            try: watch_obj["ext_krw_domestic"] = int(''.join(filter(str.isdigit, str(new_domestic))))
-            except: pass
-        elif spec_domestic and str(spec_domestic).strip():
-            watch_obj["ext_krw_domestic_display"] = str(spec_domestic)
-            try: watch_obj["ext_krw_domestic"] = int(''.join(filter(str.isdigit, str(spec_domestic))))
-            except: pass
-        elif "ext_krw_domestic_display" in old_item:
-            watch_obj["ext_krw_domestic_display"] = old_item["ext_krw_domestic_display"]
-            if "ext_krw_domestic" in old_item:
-                watch_obj["ext_krw_domestic"] = old_item["ext_krw_domestic"]
-
-        # 2. 아시아 시세
-        new_asia = m_item.get("price", {}).get("krw_asia")
-        if new_asia and str(new_asia).strip():
-            watch_obj["ext_krw_asia_display"] = f"₩{new_asia}".replace("원", "")
-            try: watch_obj["ext_krw_asia"] = int(''.join(filter(str.isdigit, str(new_asia))))
-            except: pass
-        elif spec_asia and str(spec_asia).strip():
-            watch_obj["ext_krw_asia_display"] = str(spec_asia)
-            try: watch_obj["ext_krw_asia"] = int(''.join(filter(str.isdigit, str(spec_asia))))
-            except: pass
-        elif "ext_krw_asia_display" in old_item:
-            watch_obj["ext_krw_asia_display"] = old_item["ext_krw_asia_display"]
-            if "ext_krw_asia" in old_item:
-                watch_obj["ext_krw_asia"] = old_item["ext_krw_asia"]
-
-        # 3. 수집 시간 (새로운 유효 가격이 하나라도 있으면 업데이트, 아니면 기존 시간 유지)
-        has_new_price = (new_domestic and str(new_domestic).strip()) or (new_asia and str(new_asia).strip()) or (r_item.get('price', {}).get('krw'))
+        # [필터링 로직 엄격 적용]
+        # 서버 마켓 시세 API에 실제 데이터가 있는 모델만 등록합니다.
+        # (로컬 JSON에서는 가격을 비우더라도, 등록 대상 선정은 서버 데이터를 기준으로 함)
+        has_server_market_info = m_item.get("price", {}).get("krw_domestic") or m_item.get("price", {}).get("krw_asia") or m_item.get("price", {}).get("local_market")
         
-        new_recorded_at = m_item.get("recorded_at") or r_item.get("recorded_at")
-        if has_new_price and new_recorded_at:
-            watch_obj["ext_recorded_at"] = new_recorded_at
-        elif "ext_recorded_at" in old_item:
-            watch_obj["ext_recorded_at"] = old_item["ext_recorded_at"]
-
-        # [필터링 로직 수정 - 대폭 강화]
-        # 1. 서버의 마켓 시세 API(m_item)에 실제 가격 정보가 있는 모델만 등록합니다.
-        # 2. 리테일가만 있는 모델(r_item)은 여기서 제외됩니다.
-        # 3. 이미지는 필수입니다.
-        
-        has_new_market_price = m_item.get("price", {}).get("krw_domestic") or m_item.get("price", {}).get("krw_asia")
-        # 기존 데이터에 시세가 있었던 경우도 유지하려면 아래 조건 유지, 
-        # 오직 "현재 서버에 시세가 있는 것"만 원하시면 has_new_market_price만 사용
-        has_existing_market_price = old_item.get("ext_krw_domestic_display") or old_item.get("ext_krw_asia_display")
-        
-        if has_new_market_price or has_existing_market_price:
+        if has_server_market_info:
             final_watches.append(watch_obj)
         else:
-            # 시세 정보가 없는 모델은 등록하지 않습니다.
+            # 서버에 시세 정보가 없는 모델은 등록하지 않습니다.
             continue
 
         # 이미지 처리 (PNG -> WebP)
         dest_path = os.path.join(FINAL_IMAGE_DIR, f"{ref}.webp")
         if not os.path.exists(dest_path):
-            # 원본 백업 (소스가 백업 폴더 자체가 아닐 때만 복사)
-            if os.path.abspath(os.path.dirname(src_path)) != os.path.abspath(BACKUP_IMAGE_DIR):
-                shutil.copy2(src_path, os.path.join(BACKUP_IMAGE_DIR, os.path.basename(src_path)))
+            if os.path.abspath(os.path.dirname(image_refs[ref])) != os.path.abspath(BACKUP_IMAGE_DIR):
+                shutil.copy2(image_refs[ref], os.path.join(BACKUP_IMAGE_DIR, os.path.basename(image_refs[ref])))
             
-            # WebP 변환
             try:
-                with Image.open(src_path) as img:
+                with Image.open(image_refs[ref]) as img:
                     if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
                         bg = Image.new("RGB", img.size, (255, 255, 255))
                         if img.mode == "P": img = img.convert("RGBA")
@@ -248,6 +193,7 @@ def main():
     print(f"\n🚀 모든 작업이 완료되었습니다!")
     print(f"- 최종 생성된 모델 수: {len(final_watches)}개")
     print(f"- JSON 위치: {OUTPUT_JSON_PATH}")
+    print(f"- 가격 정보는 모두 비워졌으며, 실시간 API를 통해서만 로드됩니다.")
 
 if __name__ == "__main__":
     main()

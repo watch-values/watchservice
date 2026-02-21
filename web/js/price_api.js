@@ -5,7 +5,7 @@
 (function () {
   // API URL 설정
   const DEFAULT_DYNAMIC_PRICE_URL =
-    "https://limdoohwan.pythonanywhere.com/api/kakaku/latest-prices/";
+    "https://limdoohwan.pythonanywhere.com/api/market/latest-prices/";
   const DEFAULT_RETAIL_PRICE_URL =
     "https://limdoohwan.pythonanywhere.com/api/retail/latest-prices/";
 

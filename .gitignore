@@ -2,15 +2,17 @@
 .DS_Store
 
 # Python
+venv/
 __pycache__/
 *.pyc
 
+# Excel & Raw Data
+*.xlsx
+*.csv
+work/01_scrape/
+work/02_excel/
+work/05_price/
+
 # 서버/임시 파일
 *.log
-
-# 나중에 커질 수 있는 것들 (선택)
-node_modules/
-
-# Image Source
-final/image/original_png/
 
