@@ -12,6 +12,9 @@ const filterSummaryText = document.getElementById("filterSummaryText");
 const chipGroup = document.getElementById("chipGroup");
 
 let allWatches = [];
+let filteredWatches = [];
+let currentPage = 1;
+const pageSize = 24;
 
 // 숫자 추출 (쉼표 제거 및 정수 변환)
 function parsePrice(val) {
@@ -27,10 +30,21 @@ function formatNumber(num) {
 }
 
 function render(list) {
+  filteredWatches = list;
+  currentPage = 1;
+  renderCurrentPage();
+}
+
+function renderCurrentPage() {
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+  const pageItems = filteredWatches.slice(start, end);
+
   if (resultCountEl) {
-    resultCountEl.textContent = `검색결과 총 ${list.length}개`;
+    resultCountEl.textContent = `검색결과 총 ${filteredWatches.length}개 (페이지 ${currentPage})`;
   }
-  grid.innerHTML = list.map(watch => `
+  
+  grid.innerHTML = pageItems.map(watch => `
     <a href="./detail.html?ref=${encodeURIComponent(watch.ref)}" style="text-decoration:none; color:inherit;">
       <article class="card">
         <div class="thumb">
@@ -46,6 +60,22 @@ function render(list) {
       </article>
     </a>
   `).join("");
+
+  updatePaginationUI();
+  window.scrollTo(0, 0);
+}
+
+function updatePaginationUI() {
+  const totalPages = Math.ceil(filteredWatches.length / pageSize);
+  const prevBtn = document.getElementById("prevPage");
+  const nextBtn = document.getElementById("nextPage");
+  const pageInfo = document.getElementById("pageInfo");
+
+  if (prevBtn && nextBtn && pageInfo) {
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    pageInfo.textContent = totalPages === 0 ? "0 / 0" : `${currentPage} / ${totalPages}`;
+  }
 }
 
 function getPriceValueByBasis(watch, basis) {
@@ -229,6 +259,28 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
       maxPriceInput.value = "";
       applyFilter();
     });
+
+    const prevBtn = document.getElementById("prevPage");
+    const nextBtn = document.getElementById("nextPage");
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderCurrentPage();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const totalPages = Math.ceil(filteredWatches.length / pageSize);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderCurrentPage();
+        }
+      });
+    }
 
     // 1. 먼저 정적 데이터로 렌더링 (글로벌 가격은 로딩 중 표시됨)
     applyFilter();
