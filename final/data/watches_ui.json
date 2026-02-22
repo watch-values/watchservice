@@ -8179,5 +8179,32 @@
     "ext_local_market_display": "N/A",
     "ext_local_market": null,
     "ext_recorded_at": null
+  },
+  {
+    "ref": "m126711chnr-0002",
+    "brand": "Rolex",
+    "name": "GMT-Master II",
+    "material": "오이스터스틸 & 에버로즈 골드",
+    "dial_color": "블랙",
+    "size": "40mm",
+    "thickness": "12.4mm",
+    "water_resistance": "100m",
+    "movement": "self-winding",
+    "power_reserve": "약 70시간",
+    "description": "<p>Rolex GMT-Master II m126711chnr-0002 모델입니다. 루트비어 베젤이 특징입니다.</p>",
+    "prices": {
+      "retail": {
+        "display": "N/A",
+        "value": null
+      }
+    },
+    "image": "final/image/normalized/m126711chnr-0002.webp",
+    "ext_krw_domestic_display": "N/A",
+    "ext_krw_domestic": null,
+    "ext_krw_asia_display": "N/A",
+    "ext_krw_asia": null,
+    "ext_local_market_display": "N/A",
+    "ext_local_market": null,
+    "ext_recorded_at": null
   }
 ]

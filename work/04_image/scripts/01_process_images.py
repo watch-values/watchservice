@@ -246,6 +246,11 @@ def process_brand(brand_name):
         print(f"[{brand_name.upper()}] 처리할 이미지가 없습니다.")
         return
     
+    # [추가] 최종 결과물 폴더 경로 (건너뛰기 체크용)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
+    normalized_dir = os.path.join(project_root, "final", "image", "normalized")
+    
     print(f"\n[{brand_name.upper()}] 처리 시작 (총 {len(image_files)}개, 비율: {max_ratio})")
     print("-" * 40)
     
@@ -254,6 +259,12 @@ def process_brand(brand_name):
         filename = os.path.basename(path)
         name_without_ext = os.path.splitext(filename)[0]
         output_filename = f"{name_without_ext}.png"
+        
+        # [추가] 건너뛰기 체크: 최종 webp 파일이 이미 존재하면 패스
+        final_webp_path = os.path.join(normalized_dir, f"{name_without_ext}.webp")
+        if os.path.exists(final_webp_path):
+            print(f"  - [Skip] {name_without_ext}.webp 이미 존재하여 건너뜁니다.")
+            continue
         
         # STEP 1
         s1_path = os.path.join(step1_dir, output_filename)
