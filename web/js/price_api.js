@@ -8,7 +8,7 @@
   const API_BASE = "https://limdoohwan.pythonanywhere.com";
 
   // 주의: market API 주소는 'kakaku'가 맞습니다.
-  const DEFAULT_DYNAMIC_PRICE_URL = `${API_BASE}/api/kakaku/latest-prices/`;
+  const DEFAULT_DYNAMIC_PRICE_URL = `${API_BASE}/api/market/latest-prices/`;
   const DEFAULT_RETAIL_PRICE_URL = `${API_BASE}/api/retail/latest-prices/`;
 
   const DYNAMIC_PRICE_URL =
