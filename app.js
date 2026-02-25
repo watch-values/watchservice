@@ -126,10 +126,14 @@ function applyFilter() {
     const matchSearch = !searchText || searchTarget.includes(searchText);
 
     // 3. 서버 정보 필터 (글로벌 시세가 있는 모델만 출력)
-    // ext_recorded_at이 있거나, 이미 ext_krw_domestic_display 또는 ext_krw_asia_display 값이 있는 경우 출력 대상
+    // 서버 데이터가 로드되지 않았더라도 기본적으로 모든 시계를 보여주도록 조건을 완화합니다.
+    const hasPriceInfo = true; 
+    
+    /* 기존 엄격한 필터 로직 (필요 시 주석 해제)
     const hasPriceInfo = (watch.ext_krw_domestic_display && watch.ext_krw_domestic_display !== "N/A") || 
                          (watch.ext_krw_asia_display && watch.ext_krw_asia_display !== "N/A") ||
                          !!watch.ext_recorded_at;
+    */
 
     // 4. 가격 필터 (선택한 기준)
     const price = getPriceValueByBasis(watch, priceBasis);
