@@ -4,10 +4,12 @@
 
 (function () {
   // API URL 설정
-  const DEFAULT_DYNAMIC_PRICE_URL =
-    "https://limdoohwan.pythonanywhere.com/api/market/latest-prices/";
-  const DEFAULT_RETAIL_PRICE_URL =
-    "https://limdoohwan.pythonanywhere.com/api/retail/latest-prices/";
+  // 현재 호스트가 로컬(127.0.0.1 또는 localhost)이면 로컬 API 서버(8080)를 사용
+  const API_BASE = "https://limdoohwan.pythonanywhere.com";
+
+  // 주의: market API 주소는 'kakaku'가 맞습니다.
+  const DEFAULT_DYNAMIC_PRICE_URL = `${API_BASE}/api/kakaku/latest-prices/`;
+  const DEFAULT_RETAIL_PRICE_URL = `${API_BASE}/api/retail/latest-prices/`;
 
   const DYNAMIC_PRICE_URL =
     window.DYNAMIC_PRICE_URL || DEFAULT_DYNAMIC_PRICE_URL;
