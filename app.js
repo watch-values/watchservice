@@ -308,10 +308,6 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
         const imageMap = {};
         marketData.results.forEach(item => {
           if (item.ref_id && item.image_url) {
-            // API가 주는 주소가 상대경로(/media/...)라면 도메인을 붙여줍니다.
-            // 로컬 테스트 중이라면 http://127.0.0.1:8080 을 붙여야 보일 수 있습니다.
-            // 현재 프론트엔드가 Live Server(5500) 등 다른 포트에서 실행 중이므로
-            // API 서버 주소(8080)를 명시적으로 붙여줘야 합니다.
             const apiBase = "https://limdoohwan.pythonanywhere.com";
             let fullUrl = item.image_url;
             if (fullUrl.startsWith("/")) {
