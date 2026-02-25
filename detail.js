@@ -60,7 +60,28 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
         window.PriceAPI.applyPricesToWatches(list, retailMap);
       }
       
-      // 3. API 데이터 반영하여 다시 렌더링
+      // 3. 이미지 URL 업데이트 (API에서 받은 이미지 주소로 교체)
+      if (marketData && marketData.results) {
+        const imageMap = {};
+        marketData.results.forEach(item => {
+          if (item.ref_id && item.image_url) {
+            const apiBase = "https://limdoohwan.pythonanywhere.com";
+            let fullUrl = item.image_url;
+            if (fullUrl.startsWith("/")) {
+              fullUrl = apiBase + fullUrl;
+            }
+            imageMap[item.ref_id] = fullUrl;
+          }
+        });
+
+        list.forEach(watch => {
+          if (imageMap[watch.ref]) {
+            watch.image = imageMap[watch.ref];
+          }
+        });
+      }
+      
+      // 4. API 데이터 반영하여 다시 렌더링
       renderInitial(list);
     } catch (err) {
       console.error("Dynamic price load failed:", err);
