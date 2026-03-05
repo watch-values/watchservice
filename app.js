@@ -139,11 +139,12 @@ function applyFilter() {
     // 서버 데이터가 로드된 후에는 4대 요건을 엄격하게 적용합니다.
     // (단, 초기 로딩 시에는 모든 시계를 보여주어 사용자 경험을 유지합니다.)
     let hasAllRequirements = true;
-    if (window.marketDataLoaded) {
-      const hasPrice = (watch.ext_local_market_display && watch.ext_local_market_display !== "N/A");
+    if (window.marketDataLoaded && window.retailDataLoaded) {
+      const hasPrice = (watch.ext_local_market_display && watch.ext_local_market_display !== "N/A") || 
+                       (watch.ext_krw_asia_display && watch.ext_krw_asia_display !== "N/A");
       const hasRetail = (watch.prices?.retail?.display && watch.prices?.retail?.display !== "N/A");
       const hasImage = !!(watch.apiImage || watch.image);
-      const hasSpec = !!watch.hasSpec; // 서버에서 spec 데이터가 함께 왔는지 여부
+      const hasSpec = !!watch.hasSpec;
       
       hasAllRequirements = hasPrice && hasRetail && hasImage && hasSpec;
     }
@@ -330,6 +331,7 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
       }
 
       if (retailData) {
+        window.retailDataLoaded = true; // 리테일 데이터 로드 완료 플래그
         const retailMap = window.PriceAPI.buildPriceMap(retailData);
         window.PriceAPI.applyPricesToWatches(allWatches, retailMap);
       }
