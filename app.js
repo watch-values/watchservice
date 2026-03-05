@@ -131,10 +131,7 @@ function applyFilter() {
     const matchSearch = !searchText || searchTarget.includes(searchText);
 
     // 3. 서버 정보 필터 (4대 요건 충족 모델만 출력)
-    // 엄격한 필터링을 완화하여 데이터가 일부 부족해도 카드가 보이도록 수정합니다.
-    const hasAllRequirements = true;
-    
-    /* 기존 엄격 필터 로직 (주석 처리)
+    let hasAllRequirements = true;
     if (window.marketDataLoaded && window.retailDataLoaded) {
       const hasPrice = (watch.ext_local_market_display && watch.ext_local_market_display !== "N/A") || 
                        (watch.ext_krw_asia_display && watch.ext_krw_asia_display !== "N/A");
@@ -144,9 +141,6 @@ function applyFilter() {
       
       hasAllRequirements = hasPrice && hasRetail && hasImage && hasSpec;
     }
-    */
-    
-    return matchBrand && matchSearch && hasAllRequirements && matchPrice;
 
     // 4. 가격 필터 (선택한 기준)
     const price = getPriceValueByBasis(watch, priceBasis);
@@ -160,7 +154,7 @@ function applyFilter() {
       if (minPrice !== null || maxPrice !== null) matchPrice = false;
     }
 
-    return matchBrand && matchSearch && hasPriceInfo && matchPrice;
+    return matchBrand && matchSearch && hasAllRequirements && matchPrice;
   });
 
   // 3. 정렬 (공식판매가 기준)
