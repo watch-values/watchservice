@@ -60,23 +60,39 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
         window.PriceAPI.applyPricesToWatches(list, retailMap);
       }
       
-      // 3. 이미지 URL 업데이트 (API에서 받은 이미지 주소로 교체)
+      // 3. 이미지 및 스펙 데이터 업데이트 (API에서 받은 데이터로 교체)
       if (marketData && marketData.results) {
-        const imageMap = {};
+        const apiDataMap = {};
         marketData.results.forEach(item => {
-          if (item.ref_id && item.image_url) {
+          if (item.ref_id) {
             const apiBase = "https://limdoohwan.pythonanywhere.com";
-            let fullUrl = item.image_url;
-            if (fullUrl.startsWith("/")) {
-              fullUrl = apiBase + fullUrl;
+            let fullImageUrl = item.image_url;
+            if (fullImageUrl && fullImageUrl.startsWith("/")) {
+              fullImageUrl = apiBase + fullImageUrl;
             }
-            imageMap[item.ref_id] = fullUrl;
+            apiDataMap[item.ref_id] = {
+              image: fullImageUrl,
+              spec: item.spec
+            };
           }
         });
 
         list.forEach(watch => {
-          if (imageMap[watch.ref]) {
-            watch.image = imageMap[watch.ref];
+          const apiData = apiDataMap[watch.ref];
+          if (apiData) {
+            if (apiData.image) watch.image = apiData.image;
+            
+            // 실시간 스펙 데이터가 있으면 덮어쓰기
+            if (apiData.spec) {
+              const s = apiData.spec;
+              if (s.case_size) watch.size = s.case_size;
+              if (s.material) watch.material = s.material;
+              if (s.dial_color) watch.dial_color = s.dial_color;
+              if (s.thickness) watch.thickness = s.thickness;
+              if (s.water_resistance) watch.water_resistance = s.water_resistance;
+              if (s.movement_type) watch.movement = s.movement_type;
+              if (s.power_reserve) watch.power_reserve = s.power_reserve;
+            }
           }
         });
       }
