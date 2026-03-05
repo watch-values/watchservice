@@ -131,14 +131,10 @@ function applyFilter() {
     const matchSearch = !searchText || searchTarget.includes(searchText);
 
     // 3. 서버 정보 필터 (4대 요건 충족 모델만 출력)
-    // 1) 스크래핑 가격 (ext_local_market_display 등)
-    // 2) 리테일가 (prices.retail.display)
-    // 3) 이미지 (apiImage 또는 watch.image)
-    // 4) 스펙 (서버에서 4대 요건 충족 모델만 내려주므로, marketData에 포함되어 있으면 충족)
+    // 엄격한 필터링을 완화하여 데이터가 일부 부족해도 카드가 보이도록 수정합니다.
+    const hasAllRequirements = true;
     
-    // 서버 데이터가 로드된 후에는 4대 요건을 엄격하게 적용합니다.
-    // (단, 초기 로딩 시에는 모든 시계를 보여주어 사용자 경험을 유지합니다.)
-    let hasAllRequirements = true;
+    /* 기존 엄격 필터 로직 (주석 처리)
     if (window.marketDataLoaded && window.retailDataLoaded) {
       const hasPrice = (watch.ext_local_market_display && watch.ext_local_market_display !== "N/A") || 
                        (watch.ext_krw_asia_display && watch.ext_krw_asia_display !== "N/A");
@@ -148,6 +144,7 @@ function applyFilter() {
       
       hasAllRequirements = hasPrice && hasRetail && hasImage && hasSpec;
     }
+    */
     
     return matchBrand && matchSearch && hasAllRequirements && matchPrice;
 
