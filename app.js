@@ -309,14 +309,25 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
         const marketMap = window.PriceAPI.buildPriceMap(marketData);
         window.PriceAPI.applyPricesToWatches(allWatches, marketMap);
         
-        // 서버에서 온 스펙 데이터 존재 여부 기록
+        // 서버에서 온 스펙 데이터 존재 여부 및 상세 데이터 기록
         if (marketData.results) {
           const specMap = {};
           marketData.results.forEach(item => {
-            if (item.ref_id) specMap[item.ref_id.toLowerCase()] = true;
+            if (item.ref_id) {
+              specMap[item.ref_id.toLowerCase()] = item.spec || true;
+            }
           });
           allWatches.forEach(watch => {
-            if (specMap[watch.ref.toLowerCase()]) watch.hasSpec = true;
+            const apiSpec = specMap[watch.ref.toLowerCase()];
+            if (apiSpec) {
+              watch.hasSpec = true;
+              // 실시간 상세 데이터가 객체 형태라면 덮어쓰기
+              if (typeof apiSpec === 'object') {
+                if (apiSpec.model_name) watch.name = apiSpec.model_name;
+                if (apiSpec.case_size) watch.size = apiSpec.case_size;
+                if (apiSpec.material) watch.material = apiSpec.material;
+              }
+            }
           });
         }
       }
