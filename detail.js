@@ -52,6 +52,27 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
 
       if (marketData) {
         const marketMap = window.PriceAPI.buildPriceMap(marketData);
+        
+        // 1.5. API에는 있지만 watches_ui.json에는 없는 모델 추가 (동적 확장)
+        if (marketData.results) {
+          const existingRefs = new Set(list.map(w => w.ref.toLowerCase()));
+          marketData.results.forEach(item => {
+            if (item.ref_id && !existingRefs.has(item.ref_id.toLowerCase())) {
+              const newWatch = {
+                ref: item.ref_id,
+                brand: item.brand || "Rolex",
+                name: item.model_name || "New Model",
+                material: item.spec?.material || "수집중",
+                size: item.spec?.case_size || "수집중",
+                image: item.image_url || "https://via.placeholder.com/220x220?text=No+Image",
+                prices: { retail: { display: "N/A", value: null } }
+              };
+              list.push(newWatch);
+              existingRefs.add(item.ref_id.toLowerCase());
+            }
+          });
+        }
+
         window.PriceAPI.applyPricesToWatches(list, marketMap);
       }
 

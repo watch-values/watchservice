@@ -307,6 +307,28 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
       if (marketData) {
         window.marketDataLoaded = true; // 서버 데이터 로드 완료 플래그
         const marketMap = window.PriceAPI.buildPriceMap(marketData);
+        const imageMap = {}; // 이미지 맵 선언
+
+        // 1.5. API에는 있지만 watches_ui.json에는 없는 모델 추가 (동적 확장)
+        if (marketData.results) {
+          const existingRefs = new Set(allWatches.map(w => w.ref.toLowerCase()));
+          marketData.results.forEach(item => {
+            if (item.ref_id && !existingRefs.has(item.ref_id.toLowerCase())) {
+              const newWatch = {
+                ref: item.ref_id,
+                brand: item.brand || "Rolex",
+                name: item.model_name || "New Model",
+                material: item.spec?.material || "수집중",
+                size: item.spec?.case_size || "수집중",
+                image: item.image_url || "https://via.placeholder.com/220x220?text=No+Image",
+                prices: { retail: { display: "N/A", value: null } }
+              };
+              allWatches.push(newWatch);
+              existingRefs.add(item.ref_id.toLowerCase());
+            }
+          });
+        }
+
         window.PriceAPI.applyPricesToWatches(allWatches, marketMap);
         
         // 서버에서 온 스펙 데이터 존재 여부 및 상세 데이터 기록
@@ -330,6 +352,32 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
             }
           });
         }
+
+        // 3. 이미지 URL 업데이트 (API에서 받은 이미지 주소로 교체)
+        marketData.results.forEach(item => {
+          if (item.ref_id && item.image_url) {
+            const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+            const apiBase = isLocal ? "http://127.0.0.1:8889" : "https://limdoohwan.pythonanywhere.com";
+            let fullUrl = item.image_url;
+            
+            // PythonAnywhere Media 경로 처리 (/media/ 가 포함되어 있는지 확인)
+            if (fullUrl.startsWith("/")) {
+              fullUrl = apiBase + fullUrl;
+            } else if (!fullUrl.startsWith("http")) {
+              fullUrl = apiBase + "/media/" + fullUrl;
+            }
+            imageMap[item.ref_id.toLowerCase()] = fullUrl;
+          }
+        });
+
+        allWatches.forEach(watch => {
+          const cleanRef = watch.ref.toLowerCase();
+          if (imageMap[cleanRef]) {
+            // API에 이미지가 있는 경우에만 교체하되, 
+            // 만약 API 주소가 잘못되었다면 로컬 이미지를 쓰도록 fallback 처리
+            watch.apiImage = imageMap[cleanRef];
+          }
+        });
       }
 
       if (retailData) {
@@ -337,34 +385,6 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
         const retailMap = window.PriceAPI.buildPriceMap(retailData);
         window.PriceAPI.applyPricesToWatches(allWatches, retailMap);
       }
-
-    // 3. 이미지 URL 업데이트 (API에서 받은 이미지 주소로 교체)
-    if (marketData && marketData.results) {
-      const imageMap = {};
-      marketData.results.forEach(item => {
-        if (item.ref_id && item.image_url) {
-          const apiBase = "https://limdoohwan.pythonanywhere.com";
-          let fullUrl = item.image_url;
-          
-          // PythonAnywhere Media 경로 처리 (/media/ 가 포함되어 있는지 확인)
-          if (fullUrl.startsWith("/")) {
-            fullUrl = apiBase + fullUrl;
-          } else if (!fullUrl.startsWith("http")) {
-            fullUrl = apiBase + "/media/" + fullUrl;
-          }
-          imageMap[item.ref_id.toLowerCase()] = fullUrl;
-        }
-      });
-
-      allWatches.forEach(watch => {
-        const cleanRef = watch.ref.toLowerCase();
-        if (imageMap[cleanRef]) {
-          // API에 이미지가 있는 경우에만 교체하되, 
-          // 만약 API 주소가 잘못되었다면 로컬 이미지를 쓰도록 fallback 처리
-          watch.apiImage = imageMap[cleanRef];
-        }
-      });
-    }
     
     // 4. API 데이터 반영하여 다시 필터링 및 렌더링
     applyFilter();
