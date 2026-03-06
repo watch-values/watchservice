@@ -107,6 +107,7 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
             // 실시간 스펙 데이터가 있으면 덮어쓰기
             if (apiData.spec) {
               const s = apiData.spec;
+              if (s.brand) watch.brand = s.brand; // 브랜드명 실시간 연동 추가
               if (s.model_name) watch.name = s.model_name; // 모델명 실시간 연동 추가
               if (s.case_size) watch.size = s.case_size;
               if (s.material) watch.material = s.material;
