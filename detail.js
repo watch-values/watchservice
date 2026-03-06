@@ -65,7 +65,8 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
         const apiDataMap = {};
         marketData.results.forEach(item => {
           if (item.ref_id) {
-            const apiBase = "https://limdoohwan.pythonanywhere.com";
+            const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+            const apiBase = isLocal ? "http://127.0.0.1:8889" : "https://limdoohwan.pythonanywhere.com";
             let fullImageUrl = item.image_url;
             if (fullImageUrl && fullImageUrl.startsWith("/")) {
               fullImageUrl = apiBase + fullImageUrl;
@@ -85,6 +86,7 @@ fetch(`final/data/watches_ui.json?v=${new Date().getTime()}`)
             // 실시간 스펙 데이터가 있으면 덮어쓰기
             if (apiData.spec) {
               const s = apiData.spec;
+              if (s.model_name) watch.name = s.model_name; // 모델명 실시간 연동 추가
               if (s.case_size) watch.size = s.case_size;
               if (s.material) watch.material = s.material;
               if (s.dial_color) watch.dial_color = s.dial_color;
